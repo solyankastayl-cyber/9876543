@@ -37,6 +37,9 @@ export interface WorldStatePack {
   // Global cross-asset context
   global: GlobalContext;
   
+  // P9.0: Cross-asset correlation regime
+  crossAsset?: CrossAssetPack;
+  
   // Meta
   meta: {
     generatedAt: string;
