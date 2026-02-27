@@ -114,6 +114,82 @@ export class BrainOrchestratorService {
   }
   
   // ═══════════════════════════════════════════════════════════════
+  // P9.0: CROSS-ASSET CORRELATION OVERRIDES
+  // ═══════════════════════════════════════════════════════════════
+  
+  private applyCrossAssetOverrides(
+    crossAsset: CrossAssetPack,
+    directives: BrainDirectives,
+    reasoning: OverrideReasoning,
+    scenario: ScenarioPack
+  ): void {
+    const regime = crossAsset.regime.label;
+    const confidence = crossAsset.regime.confidence;
+    
+    // Only apply if confidence is decent
+    if (confidence < 0.3) return;
+    
+    switch (regime) {
+      case 'RISK_OFF_SYNC':
+        // Strengthen risk-off: BTC haircut stronger
+        const existingBtcHaircut = directives.haircuts?.btc ?? 1;
+        directives.haircuts = {
+          ...directives.haircuts,
+          btc: Math.min(existingBtcHaircut, 0.85),
+        };
+        directives.warnings!.push(`CROSS-ASSET: RISK_OFF_SYNC → extra BTC haircut (conf=${confidence.toFixed(2)})`);
+        (reasoning as any).crossAssetOverride = { regime, action: 'BTC haircut 0.85' };
+        break;
+        
+      case 'FLIGHT_TO_QUALITY':
+        // Allow slightly more cash, reduce risk
+        const existingSpxScale = directives.scales?.spx?.sizeScale ?? 1;
+        directives.scales = {
+          ...directives.scales,
+          spx: { sizeScale: Math.min(existingSpxScale, 0.95) },
+        };
+        directives.warnings!.push(`CROSS-ASSET: FLIGHT_TO_QUALITY → SPX scale reduced (conf=${confidence.toFixed(2)})`);
+        (reasoning as any).crossAssetOverride = { regime, action: 'SPX scale 0.95' };
+        break;
+        
+      case 'DECOUPLED':
+        // Lower certainty → reduce sizes by 5-10%
+        const decoupleScale = 0.92;
+        const existBtcScale = directives.scales?.btc?.sizeScale ?? 1;
+        const existSpxScale = directives.scales?.spx?.sizeScale ?? 1;
+        directives.scales = {
+          ...directives.scales,
+          btc: { sizeScale: Math.min(existBtcScale, decoupleScale) },
+          spx: { sizeScale: Math.min(existSpxScale, decoupleScale) },
+        };
+        directives.warnings!.push(`CROSS-ASSET: DECOUPLED → uncertainty↑, sizes reduced ×${decoupleScale} (conf=${confidence.toFixed(2)})`);
+        (reasoning as any).crossAssetOverride = { regime, action: `sizes × ${decoupleScale}` };
+        break;
+        
+      case 'RISK_ON_SYNC':
+        // If tailRisk low → allow mild extension (but under caps)
+        if (scenario.name === 'BASE' && !reasoning.tailAmplified) {
+          const btcScale = directives.scales?.btc?.sizeScale ?? 1;
+          const spxScale = directives.scales?.spx?.sizeScale ?? 1;
+          if (btcScale <= 1 && spxScale <= 1) {
+            directives.scales = {
+              ...directives.scales,
+              btc: { sizeScale: Math.min(btcScale * 1.05, 1.10) },
+              spx: { sizeScale: Math.min(spxScale * 1.05, 1.10) },
+            };
+            directives.warnings!.push(`CROSS-ASSET: RISK_ON_SYNC → mild extension ×1.05 (conf=${confidence.toFixed(2)})`);
+            (reasoning as any).crossAssetOverride = { regime, action: 'sizes × 1.05' };
+          }
+        }
+        break;
+        
+      case 'MIXED':
+        // No action
+        break;
+    }
+  }
+  
+  // ═══════════════════════════════════════════════════════════════
   // LEGACY RULES (fallback when forecast unavailable)
   // ═══════════════════════════════════════════════════════════════
   
