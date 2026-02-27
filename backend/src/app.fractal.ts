@@ -576,6 +576,14 @@ async function main() {
   await crossAssetRoutes(app);
   console.log('[Fractal] ✅ Cross-Asset registered at /api/brain/v2/cross-asset');
   
+  // ═══════════════════════════════════════════════════════════════
+  // P9.1 + P9.2 — BRAIN COMPARE & SIMULATION
+  // ═══════════════════════════════════════════════════════════════
+  console.log('[Fractal] Registering Brain Compare + Simulation...');
+  const { brainCompareSimRoutes } = await import('./modules/brain/routes/brain_compare_sim.routes.js');
+  await brainCompareSimRoutes(app);
+  console.log('[Fractal] ✅ Brain Compare+Sim registered at /api/brain/v2/compare, /sim');
+  
   // Graceful shutdown
   const shutdown = async (signal: string) => {
     console.log(`[Fractal] Received ${signal}, shutting down...`);
