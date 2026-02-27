@@ -584,6 +584,14 @@ async function main() {
   await brainCompareSimRoutes(app);
   console.log('[Fractal] ✅ Brain Compare+Sim registered at /api/brain/v2/compare, /sim');
   
+  // ═══════════════════════════════════════════════════════════════
+  // STRESS SIMULATION + PLATFORM CRASH-TEST
+  // ═══════════════════════════════════════════════════════════════
+  console.log('[Fractal] Registering Stress + Crash-Test...');
+  const { stressCrashTestRoutes } = await import('./modules/brain/routes/stress_crash_test.routes.js');
+  await stressCrashTestRoutes(app);
+  console.log('[Fractal] ✅ Stress+CrashTest registered at /api/brain/v2/stress, /api/platform/crash-test');
+  
   // Graceful shutdown
   const shutdown = async (signal: string) => {
     console.log(`[Fractal] Received ${signal}, shutting down...`);
