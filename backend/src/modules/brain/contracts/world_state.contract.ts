@@ -6,6 +6,7 @@
  */
 
 import { AssetId, AssetStatePack } from './asset_state.contract.js';
+import { CrossAssetPack } from './cross_asset.contract.js';
 
 export interface GlobalContext {
   // DXY macro dominates cross-asset
