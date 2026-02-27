@@ -73,10 +73,22 @@ export function applyBrainBridge(input: BrainBridgeInput): BrainBridgeOutput {
   const steps: BridgeStep[] = [];
   const warnings: string[] = [];
   
-  // Extract base values
-  let spx = baseAllocations.spxSize;
-  let btc = baseAllocations.btcSize;
-  let cash = baseAllocations.cashSize;
+  // Extract and NORMALIZE base values (Engine may return unnormalized allocations)
+  let rawSum = baseAllocations.spxSize + baseAllocations.btcSize + baseAllocations.cashSize;
+  if (rawSum <= 0) rawSum = 1; // Safety
+  
+  let spx = baseAllocations.spxSize / rawSum;
+  let btc = baseAllocations.btcSize / rawSum;
+  let cash = baseAllocations.cashSize / rawSum;
+  
+  // Ensure normalized sum
+  const normSum = spx + btc + cash;
+  if (Math.abs(normSum - 1) > 0.001) {
+    const fix = 1 / normSum;
+    spx *= fix;
+    btc *= fix;
+    cash *= fix;
+  }
   
   const baseSpx = spx;
   const baseBtc = btc;
