@@ -5,11 +5,15 @@
  * - GET /api/brain/v2/forecast — Quantile forecasts
  * - GET /api/brain/v2/forecast/status — Model status
  * - POST /api/brain/v2/forecast/train — Train MoE model (P8.0-B2)
+ * - GET /api/brain/v2/forecast/compare — Compare horizons
  */
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { getForecastPipelineService } from '../services/forecast_pipeline.service.js';
-import { validateForecast } from '../contracts/quantile_forecast.contract.js';
+import { getDatasetBuilderService } from '../services/dataset_builder.service.js';
+import { getQuantileMixtureService } from '../services/quantile_mixture.service.js';
+import { getQuantileModelRepo } from '../storage/quantile_model.repo.js';
+import { validateForecast, Horizon, HORIZONS } from '../contracts/quantile_forecast.contract.js';
 
 export async function brainForecastRoutes(fastify: FastifyInstance): Promise<void> {
   
@@ -33,7 +37,6 @@ export async function brainForecastRoutes(fastify: FastifyInstance): Promise<voi
       const pipelineService = getForecastPipelineService();
       const forecast = await pipelineService.generateForecast(asset, asOf);
       
-      // Validate
       const validation = validateForecast(forecast);
       
       return reply.send({
@@ -102,18 +105,89 @@ export async function brainForecastRoutes(fastify: FastifyInstance): Promise<voi
     }>,
     reply: FastifyReply
   ) => {
-    // P8.0-B2: Training not implemented yet
-    return reply.status(501).send({
-      ok: false,
-      error: 'NOT_IMPLEMENTED',
-      message: 'MoE training will be implemented in P8.0-B2. Currently using baseline model.',
-      baseline: {
-        version: 'baseline_v1',
-        description: 'Using empirical quantiles with regime adjustments',
-        horizons: ['30D', '90D', '180D', '365D'],
-        regimes: ['EASING', 'TIGHTENING', 'STRESS', 'NEUTRAL', 'NEUTRAL_MIXED'],
-      },
-    });
+    const body = request.body || {};
+    
+    const asset = body.asset || 'dxy';
+    const start = body.start || '2015-01-01';
+    const end = body.end || new Date().toISOString().split('T')[0];
+    const step = body.step || 'WEEKLY';
+    const horizons = (body.horizons || ['30D', '90D', '180D', '365D']) as Horizon[];
+    const quantiles = body.quantiles || [0.05, 0.5, 0.95];
+    const regimeExperts = body.regimeExperts || ['EASING', 'TIGHTENING', 'STRESS', 'NEUTRAL', 'NEUTRAL_MIXED'];
+    const minSamplesPerExpert = body.minSamplesPerExpert || 60;
+    const smoothing = body.smoothing || 0.25;
+    const seed = body.seed || 42;
+    
+    try {
+      console.log(`[Train] Starting MoE training for ${asset}: ${start} → ${end}, step=${step}`);
+      
+      // 1. Build dataset
+      const datasetBuilder = getDatasetBuilderService();
+      const dataset = await datasetBuilder.buildDataset({
+        asset,
+        start,
+        end,
+        step,
+        horizons,
+        regimeExperts,
+      });
+      
+      console.log(`[Train] Dataset built: ${dataset.stats.validSamples} samples, skipped ${dataset.stats.skippedNoForwardPrice}`);
+      
+      if (dataset.samples.length < minSamplesPerExpert) {
+        return reply.status(400).send({
+          ok: false,
+          error: 'INSUFFICIENT_DATA',
+          message: `Only ${dataset.samples.length} valid samples, need at least ${minSamplesPerExpert}`,
+          stats: dataset.stats,
+        });
+      }
+      
+      // 2. Train MoE model
+      const mixtureService = getQuantileMixtureService();
+      const trainedWeights = mixtureService.train(dataset.samples, {
+        asset,
+        horizons,
+        quantiles,
+        regimeExperts,
+        minSamplesPerExpert,
+        smoothing,
+        seed,
+      });
+      
+      console.log(`[Train] MoE training complete: ${trainedWeights.stats.trainingTimeMs}ms`);
+      
+      // 3. Save to MongoDB
+      const repo = getQuantileModelRepo();
+      const weightsId = await repo.save(trainedWeights);
+      
+      // 4. Invalidate pipeline cache
+      const pipelineService = getForecastPipelineService();
+      pipelineService.invalidateCache();
+      
+      console.log(`[Train] Model saved as ${weightsId}`);
+      
+      return reply.send({
+        ok: true,
+        modelVersion: trainedWeights.modelVersion,
+        trainedAt: trainedWeights.trainedAt,
+        weightsId,
+        stats: {
+          totalSamples: trainedWeights.stats.totalSamples,
+          perExpert: trainedWeights.stats.perExpert,
+          droppedExperts: trainedWeights.droppedExperts,
+          trainingTimeMs: trainedWeights.stats.trainingTimeMs,
+          datasetStats: dataset.stats,
+        },
+      });
+    } catch (e) {
+      console.error(`[Train] Error:`, e);
+      return reply.status(500).send({
+        ok: false,
+        error: 'TRAIN_ERROR',
+        message: (e as Error).message,
+      });
+    }
   });
   
   // ─────────────────────────────────────────────────────────────
@@ -136,7 +210,6 @@ export async function brainForecastRoutes(fastify: FastifyInstance): Promise<voi
       const pipelineService = getForecastPipelineService();
       const forecast = await pipelineService.generateForecast(asset, asOf);
       
-      // Build comparison view
       const comparison = Object.entries(forecast.byHorizon).map(([horizon, data]) => ({
         horizon,
         direction: data.mean > 0 ? 'UP' : 'DOWN',
@@ -151,6 +224,8 @@ export async function brainForecastRoutes(fastify: FastifyInstance): Promise<voi
         asset,
         asOf,
         regime: forecast.regime.dominant,
+        modelVersion: forecast.model.modelVersion,
+        isBaseline: forecast.model.isBaseline,
         comparison,
         summary: {
           shortTermBias: forecast.byHorizon['30D'].mean > 0 ? 'BULLISH' : 'BEARISH',
