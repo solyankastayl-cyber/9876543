@@ -29,6 +29,18 @@ import { getMetaRiskService } from './meta_risk.service.js';
 export class BrainOrchestratorService {
   
   /**
+   * Simplified getDecision for external services (MetaRisk, etc.)
+   */
+  async getDecision(asOf: string): Promise<BrainOutputPack | null> {
+    try {
+      return await this.computeDecision(asOf, false);
+    } catch (e) {
+      console.warn('[Brain] getDecision failed:', (e as Error).message);
+      return null;
+    }
+  }
+  
+  /**
    * Main entry: compute Brain decision
    * @param withForecast - include full forecast in response (for debug)
    */
