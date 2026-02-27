@@ -64,9 +64,9 @@ export async function getEngineGlobalWithBrain(params: {
   asOf?: string;
   brain?: boolean;
   brainMode?: BrainMode;
-  optimizer?: boolean;  // P11 placeholder
+  optimizer?: boolean;  // P11: Enable optimizer wrapper
 }): Promise<EngineGlobalWithBrainResponse> {
-  const { asOf, brain = false, brainMode = 'off' } = params;
+  const { asOf, brain = false, brainMode = 'off', optimizer = false } = params;
   const effectiveAsOf = asOf || new Date().toISOString().split('T')[0];
   
   // 1. Get base engine output
