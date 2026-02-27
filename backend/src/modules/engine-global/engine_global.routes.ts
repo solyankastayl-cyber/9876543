@@ -35,6 +35,7 @@ export async function registerEngineGlobalRoutes(fastify: FastifyInstance): Prom
   //   - asOf: date string
   //   - brain: 1 or true to enable brain
   //   - brainMode: on | off | shadow
+  //   - optimizer: 1 or true to enable optimizer (P11)
   // ─────────────────────────────────────────────────────────────
   
   fastify.get(`${prefix}/global`, async (
@@ -43,14 +44,16 @@ export async function registerEngineGlobalRoutes(fastify: FastifyInstance): Prom
         asOf?: string;
         brain?: string;
         brainMode?: string;
+        optimizer?: string;  // P11
       };
     }>
   ) => {
-    const { asOf, brain, brainMode } = req.query;
+    const { asOf, brain, brainMode, optimizer } = req.query;
     
     try {
       // Check if brain is enabled
       const brainEnabled = brain === '1' || brain === 'true';
+      const optimizerEnabled = optimizer === '1' || optimizer === 'true';
       // Default mode: 'on' when brain enabled, 'off' otherwise
       const mode: BrainMode = brainMode 
         ? (brainMode as BrainMode) 
@@ -62,6 +65,7 @@ export async function registerEngineGlobalRoutes(fastify: FastifyInstance): Prom
           asOf,
           brain: true,
           brainMode: mode,
+          optimizer: optimizerEnabled,
         });
         return result;
       }
