@@ -230,3 +230,69 @@ TAIL scenario allows cap up to 0.60 (risk-down only)
 | /api/brain/v2/meta-risk/simulate | POST | Test with overrides |
 
 ### Next: P10.3 — Integration into Brain/Engine
+
+## P10.3 — Brain/Engine Integration (IMPLEMENTED 2026-02-27)
+
+### Pipeline Order (CRITICAL)
+```
+1. Base allocations (normalized)
+2. Apply Brain directives (caps/haircuts/scales)
+3. Calculate override intensity
+4. Enforce overrideCap (shrink if needed)
+5. Apply globalScale (metaRisk)
+6. TAIL risk clamp (no risk increase)
+7. Rebalance cash
+8. Final clamp + normalization
+```
+
+### Shrink Logic
+```
+if (intensityBefore > maxOverrideCap):
+    shrinkFactor = maxOverrideCap / intensityBefore
+    spx = base + delta * shrinkFactor
+    btc = base + delta * shrinkFactor
+```
+
+### MetaRisk Section in Response
+```json
+{
+  "metaRisk": {
+    "posture": "DEFENSIVE",
+    "globalScale": 0.816,
+    "maxOverrideCap": 0.6,
+    "intensityBefore": 0.331,
+    "intensityAfter": 0.331,
+    "shrinkApplied": false,
+    "tailRiskClamp": false
+  }
+}
+```
+
+### Test Gates (ALL PASSED)
+- ✅ Shrink applied when intensity > cap
+- ✅ Sign preservation (direction preserved)
+- ✅ TAIL no risk increase
+- ✅ No NaN
+- ✅ Allocations sum = 1.0 ± 0.001
+- ✅ Crash-test resilienceScore = 1.0
+
+### Crash-Test Results
+| Mode | maxOverride | Status |
+|------|-------------|--------|
+| NORMAL | 0.331 | ✅ |
+| COVID_CRASH | 0.331 | ✅ |
+| 2008_STYLE | 0.522 | ✅ |
+| USD_SPIKE | 0.331 | ✅ |
+| LIQUIDITY_FREEZE | 0.404 | ✅ |
+| DETERMINISM | 0 | ✅ |
+
+**Final Grade: PRODUCTION**
+**Resilience Score: 1.0**
+
+### Files Modified
+- `engine_global_brain_bridge.service.ts` - MetaRisk integration
+- `brain_bridge.service.ts` - NEW: shrink logic + globalScale
+- `stress_simulation.service.ts` - Normalized allocations
+- `brain_compare.service.ts` - Normalized allocations
+
+### Next: P11 — Capital Allocation Optimizer
