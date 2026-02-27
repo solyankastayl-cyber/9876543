@@ -20,11 +20,15 @@ export class WorldStateService {
     const assetService = getAssetStateService();
     
     // Fetch all assets in parallel
-    const [dxy, spx, btc, health] = await Promise.all([
+    const [dxy, spx, btc, health, crossAsset] = await Promise.all([
       assetService.buildAssetState('dxy', asOf),
       assetService.buildAssetState('spx', asOf),
       assetService.buildAssetState('btc', asOf),
       getMacroHealth(),
+      getCrossAssetRegimeService().buildPack(asOf).catch(e => {
+        console.warn('[WorldState] CrossAsset unavailable:', (e as Error).message);
+        return null;
+      }),
     ]);
     
     const assets: Record<AssetId, typeof dxy> = { dxy, spx, btc };
