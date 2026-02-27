@@ -1,0 +1,85 @@
+{
+  "summary": "Completed comprehensive testing of P8.0-B Brain Forecast API (Quantile MoE Model). All 23 tests passed. The forecast pipeline with regime-gated Mixture-of-Experts model is fully functional.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "observation": "Most regime samples fall into NEUTRAL - coverage shows only NEUTRAL expert is active",
+        "impact": "Expected behavior per agent context - macro engine defaults historical dates to NEUTRAL regime"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "GET /api/brain/v2/forecast?asset=dxy — returns valid forecast with 4 horizons (30D, 90D, 180D, 365D)",
+    "GET /api/brain/v2/forecast?asset=dxy — q05 ≤ q50 ≤ q95 (monotonicity) for ALL horizons",
+    "GET /api/brain/v2/forecast?asset=dxy — all values are finite numbers",
+    "GET /api/brain/v2/forecast — determinism: same asOf returns same inputsHash",
+    "GET /api/brain/v2/forecast — noLookahead is true in response",
+    "GET /api/brain/v2/forecast — model.isBaseline is false (trained MoE model is active)",
+    "GET /api/brain/v2/forecast — model.modelVersion is 'qv1_moe'",
+    "GET /api/brain/v2/forecast — tailRisk is between 0 and 1 for all horizons",
+    "GET /api/brain/v2/forecast — Regime probabilities contain EASING, TIGHTENING, STRESS, NEUTRAL keys",
+    "GET /api/brain/v2/forecast/status?asset=dxy — shows model availability and coverage info",
+    "GET /api/brain/v2/forecast/status — isBaseline is false when trained model exists",
+    "GET /api/brain/v2/forecast/status — coverage shows expert regime availability",
+    "POST /api/brain/v2/forecast/train — returns stats with totalSamples, perExpert, droppedExperts",
+    "POST /api/brain/v2/forecast/train — modelVersion is 'qv1_moe' after training",
+    "POST /api/brain/v2/forecast/train — after training, GET /forecast uses the trained model (not baseline)",
+    "GET /api/brain/v2/forecast/compare — returns comparison view with all 4 horizons",
+    "GET /api/brain/v2/forecast/compare — each comparison has direction, mean, range, tailRisk, riskLevel",
+    "GET /api/brain/v2/forecast/compare — summary has shortTermBias, longTermBias, avgTailRisk",
+    "GET /api/brain/v2/forecast/compare — shows modelVersion='qv1_moe' and isBaseline=false",
+    "Forecast with historical asOf date returns valid response",
+    "Forecast without asset param defaults to dxy",
+    "Compare endpoint with historical asOf works correctly"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_brain_forecast_moe.py",
+    "/app/test_reports/pytest/pytest_brain_forecast_moe.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_brain_forecast_moe.py"
+  ],
+  "success_rate": {
+    "backend": "100% (23/23 tests passed)",
+    "frontend": "N/A (backend only testing requested)"
+  },
+  "seed_data_creation": "None - used existing trained MoE model in MongoDB",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "P8.0-B Brain Forecast API is fully functional. MoE model is trained and saved to MongoDB with only NEUTRAL expert active (others dropped due to < 60 samples - expected). All endpoints: GET /forecast, GET /status, POST /train, GET /compare are working correctly.",
+  "verified_features": {
+    "forecast_endpoint": {
+      "4_horizons": "30D, 90D, 180D, 365D",
+      "quantile_monotonicity": "q05 ≤ q50 ≤ q95 enforced",
+      "finite_values": "All values are finite numbers",
+      "determinism": "Same asOf → same inputsHash",
+      "no_lookahead": "true",
+      "trained_model_active": "isBaseline=false, modelVersion=qv1_moe",
+      "tail_risk_range": "0 to 1 for all horizons",
+      "regime_probs": "EASING, TIGHTENING, STRESS, NEUTRAL present"
+    },
+    "status_endpoint": {
+      "model_availability": "available=true",
+      "coverage_info": "Shows active/dropped experts",
+      "not_baseline": "isBaseline=false"
+    },
+    "train_endpoint": {
+      "stats_returned": "totalSamples, perExpert, droppedExperts",
+      "model_version": "qv1_moe",
+      "cache_invalidation": "Forecast uses newly trained model"
+    },
+    "compare_endpoint": {
+      "all_horizons": "30D, 90D, 180D, 365D included",
+      "required_fields": "direction, mean, range, tailRisk, riskLevel",
+      "summary": "shortTermBias, longTermBias, avgTailRisk"
+    }
+  }
+}
