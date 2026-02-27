@@ -176,16 +176,78 @@ export async function getEngineGlobalWithBrain(params: {
     bridgeResult.warnings.push(...validation.errors.map(e => `VALIDATION: ${e}`));
   }
   
+  // ─────────────────────────────────────────────────────────────
+  // P11: Apply Optimizer (small deltas on top of Brain)
+  // ─────────────────────────────────────────────────────────────
+  
+  let finalAllocations = bridgeResult.allocations;
+  let optimizerResult: OptimizerOutput | undefined;
+  
+  if (optimizer) {
+    try {
+      // Build optimizer input
+      const regimeMemory = await getRegimeMemoryService().getCurrent(effectiveAsOf);
+      const crossAssetRegime = regimeMemory.crossAsset.current;
+      
+      // Estimate contagion score
+      let contagionScore = 0.3;
+      if (crossAssetRegime === 'RISK_OFF_SYNC') contagionScore = 0.8;
+      else if (crossAssetRegime === 'FLIGHT_TO_QUALITY') contagionScore = 0.7;
+      else if (crossAssetRegime === 'DECOUPLED') contagionScore = 0.2;
+      else if (crossAssetRegime === 'RISK_ON_SYNC') contagionScore = 0.4;
+      
+      const optimizerInput: OptimizerInput = {
+        asOf: effectiveAsOf,
+        allocations: {
+          spx: bridgeResult.allocations.spxSize,
+          btc: bridgeResult.allocations.btcSize,
+          cash: bridgeResult.allocations.cashSize,
+        },
+        posture: metaRiskPack?.posture || 'NEUTRAL',
+        scenario: (brainDecision.scenario.name as 'BASE' | 'RISK' | 'TAIL') || 'BASE',
+        crossAssetRegime,
+        contagionScore,
+        forecasts: {
+          spx: {
+            mean: brainDecision?.directives?.scales?.spx?.sizeScale ?? 0.02,
+            q05: -(brainDecision?.directives?.haircuts?.spx ?? 0.05),
+            tailRisk: brainDecision?.evidence?.tailRisk ?? 0.3,
+          },
+          btc: {
+            mean: brainDecision?.directives?.scales?.btc?.sizeScale ?? 0.03,
+            q05: -(brainDecision?.directives?.haircuts?.btc ?? 0.08),
+            tailRisk: brainDecision?.evidence?.tailRisk ?? 0.4,
+          },
+        },
+      };
+      
+      optimizerResult = getOptimizerService().compute(optimizerInput, 'on');
+      
+      // Update final allocations with optimizer deltas
+      finalAllocations = {
+        spxSize: optimizerResult.final.spx,
+        btcSize: optimizerResult.final.btc,
+        dxySize: bridgeResult.allocations.dxySize,
+        cashSize: optimizerResult.final.cash,
+      };
+      
+      console.log(`[EngineBrain] Optimizer applied: deltas spx=${optimizerResult.deltas.spx}, btc=${optimizerResult.deltas.btc}`);
+    } catch (e) {
+      console.warn('[EngineBrain] Optimizer error:', (e as Error).message);
+      bridgeResult.warnings.push(`OPTIMIZER_ERROR: ${(e as Error).message}`);
+    }
+  }
+  
   // Update evidence with brain info
   const enhancedEvidence = {
     ...engineOut.evidence,
-    headline: `${engineOut.evidence.headline} | Brain: ${brainDecision.scenario.name} | Posture: ${bridgeResult.metaRisk.posture}`,
+    headline: `${engineOut.evidence.headline} | Brain: ${brainDecision.scenario.name} | Posture: ${bridgeResult.metaRisk.posture}${optimizer ? ' | Opt: ON' : ''}`,
     brainOverrides: brainApplied.brainEvidence || [],
   };
   
   return {
     ...engineOut,
-    allocations: bridgeResult.allocations,
+    allocations: finalAllocations,
     evidence: enhancedEvidence as any,
     brain: {
       mode: 'on',
@@ -193,6 +255,7 @@ export async function getEngineGlobalWithBrain(params: {
       metaRisk: bridgeResult.metaRisk,
       bridgeSteps: bridgeResult.steps,
       warnings: bridgeResult.warnings,
+      optimizer: optimizerResult,
     },
   };
 }
