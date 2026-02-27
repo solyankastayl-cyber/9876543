@@ -84,13 +84,8 @@ export class BrainOrchestratorService {
     // 3. Build evidence (enriched with forecast data)
     const evidence = this.buildEvidence(world, scenario, directives, forecast, overrideReasoning);
     
-    // P10.3: Get MetaRisk and add to output
-    let metaRiskPack;
-    try {
-      metaRiskPack = await getMetaRiskService().getMetaRisk(asOf);
-    } catch (e) {
-      console.warn('[Brain] MetaRisk unavailable:', (e as Error).message);
-    }
+    // Note: MetaRisk is now computed separately in engine_global_brain_bridge
+    // to avoid circular dependency
     
     // 4. Build response
     const output: BrainOutputPack = {
@@ -103,10 +98,7 @@ export class BrainOrchestratorService {
         brainVersion: forecast ? 'v2.1.0-moe' : 'v2.0.0-legacy',
         computeTimeMs: Date.now() - startTime,
         inputsHash: world.meta.inputsHash,
-        // P10.3: MetaRisk integration
-        posture: metaRiskPack?.posture,
-        globalScale: metaRiskPack?.metaRiskScale,
-        maxOverrideCap: metaRiskPack?.maxOverrideCap,
+        // MetaRisk fields will be added by engine bridge
       },
     };
     
