@@ -179,20 +179,26 @@ export async function brainRoutes(fastify: FastifyInstance): Promise<void> {
     
     try {
       const brainService = getBrainOrchestratorService();
-      const decision = await brainService.computeDecision(asOf);
+      const decision = await brainService.computeDecision(asOf, true);
       
-      // Return condensed summary
+      // Return condensed summary with forecast info
       return reply.send({
         ok: true,
         asOf,
+        brainVersion: decision.meta.brainVersion,
         scenario: decision.scenario.name,
         scenarioProbs: decision.scenario.probs,
         riskMode: decision.directives.riskMode,
         headline: decision.evidence.headline,
-        drivers: decision.evidence.drivers.slice(0, 5),
+        drivers: decision.evidence.drivers.slice(0, 7),
         warnings: decision.directives.warnings,
         haircuts: decision.directives.haircuts,
         caps: decision.directives.caps,
+        scales: decision.directives.scales,
+        overrideReasoning: (decision as any).overrideReasoning,
+        forecastSummary: decision.forecasts?.dxy ? {
+          byHorizon: decision.forecasts.dxy.byHorizon,
+        } : undefined,
       });
     } catch (e) {
       return reply.status(500).send({
