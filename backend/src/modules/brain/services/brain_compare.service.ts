@@ -111,10 +111,16 @@ export class BrainCompareService {
 
   private extractAllocations(engine: any): AllocationSnapshot {
     const alloc = engine?.allocations || {};
+    const rawSpx = alloc.spxSize || 0;
+    const rawBtc = alloc.btcSize || 0;
+    const rawCash = alloc.cashSize || 0;
+    
+    // Normalize (Engine may return unnormalized allocations)
+    const sum = rawSpx + rawBtc + rawCash || 1;
     return {
-      spxSize: clamp01(alloc.spxSize || 0),
-      btcSize: clamp01(alloc.btcSize || 0),
-      cashSize: clamp01(alloc.cashSize || 0),
+      spxSize: clamp01(rawSpx / sum),
+      btcSize: clamp01(rawBtc / sum),
+      cashSize: clamp01(rawCash / sum),
     };
   }
 
