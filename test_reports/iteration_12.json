@@ -1,0 +1,108 @@
+{
+  "summary": "Completed comprehensive testing of P9.1 (Brain Compare) and P9.2 (Brain Simulation) endpoints. All 22 tests passed. Compare returns BrainComparePack with brain_off vs brain_on allocations, delta, severity, context. Simulation returns walk-forward report with hit-rate metrics, exposure metrics, samples, and verdict with acceptance gates.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "observation": "maxOverrideIntensity gate fails (0.498 > 0.35 threshold)",
+        "impact": "Expected behavior per agent context - Brain reduces cash by ~50% in TAIL scenario",
+        "evidence": "verdict.gates.maxOverrideIntensity: {pass: false, value: 0.498, threshold: 0.35}",
+        "recommendation": "Consider adjusting threshold if this intensity is acceptable for TAIL scenarios"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "GET /api/brain/v2/compare — returns BrainComparePack with base (brain_off), brain (brain_on), diff, context",
+    "GET /api/brain/v2/compare — base.allocations has spxSize, btcSize, cashSize (all 0..1)",
+    "GET /api/brain/v2/compare — brain.allocations has spxSize, btcSize, cashSize (all 0..1)",
+    "GET /api/brain/v2/compare — brain.decision has scenario, probabilities, directives",
+    "GET /api/brain/v2/compare — diff has allocationsDelta, changed[], severity, diffHash",
+    "GET /api/brain/v2/compare — diff.severity is one of NONE, LOW, MEDIUM, HIGH",
+    "GET /api/brain/v2/compare — diff.changed[].field, from, to, delta, reasons, sources are present",
+    "GET /api/brain/v2/compare — context has crossAsset.label, macro.regime, guard.level",
+    "GET /api/brain/v2/compare — determinism: same asOf → same diffHash",
+    "GET /api/brain/v2/compare — inputsHash is present and consistent",
+    "POST /api/brain/v2/sim/run — returns simulation report with id, window, metrics, samples, verdict",
+    "POST /api/brain/v2/sim/run — metrics has hitRate_off, hitRate_on, deltaPp for requested horizons",
+    "POST /api/brain/v2/sim/run — metrics has avgExposure_off, avgExposure_on, brainFlipRate, avgOverrideIntensity, maxOverrideIntensity",
+    "POST /api/brain/v2/sim/run — verdict has ready boolean, reasons[], gates with pass/value/threshold",
+    "POST /api/brain/v2/sim/run — verdict.gates includes deltaHitRateAny, noDegradation, brainFlipRate, maxOverrideIntensity",
+    "POST /api/brain/v2/sim/run — samples array contains asOf, compare.scenario, compare.delta, realized returns",
+    "GET /api/brain/v2/sim/status — lists stored report IDs",
+    "GET /api/brain/v2/sim/status?id=X — returns status of specific simulation",
+    "GET /api/brain/v2/sim/report?id=X — returns full report",
+    "GET /api/brain/v2/cross-asset — still works (regression)",
+    "GET /api/brain/v2/decision — still works (regression)",
+    "GET /api/brain/v2/forecast — still works (regression)"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_brain_compare_sim_p91_p92.py",
+    "/app/test_reports/pytest/pytest_brain_compare_sim_p91_p92.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_brain_compare_sim_p91_p92.py"
+  ],
+  "success_rate": {
+    "backend": "100% (22/22 tests passed)",
+    "frontend": "N/A (backend only testing requested)"
+  },
+  "seed_data_creation": "None - used existing DXY/BTC/SPX data from MongoDB collections",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "P9.1 Compare endpoint returns BrainComparePack with allocations delta, changed fields with reasons/sources, severity (NONE/LOW/MEDIUM/HIGH), and context (crossAsset, macro, guard). P9.2 Simulation returns walk-forward report with hit-rate metrics, verdict with 4 acceptance gates. Current state: brain_scenario=TAIL, cash reduced by 0.498 (HIGH severity). maxOverrideIntensity gate fails (0.498 > 0.35) which is expected per design for TAIL scenarios. Simulation reports are stored in-memory and retrievable via /sim/status and /sim/report.",
+  "verified_features": {
+    "compare_endpoint_p91": {
+      "structure": "asOf, inputsHash, base, brain, diff, context",
+      "base": "engineMode=brain_off, allocations with spxSize/btcSize/cashSize in [0,1]",
+      "brain": "engineMode=brain_on, allocations, decision with scenario/probabilities/directives",
+      "diff": "allocationsDelta, changed[] with field/from/to/delta/reasons/sources, severity, diffHash",
+      "context": "crossAsset (label, confidence), macro (regime, activeEngine), guard (level)",
+      "determinism": "Same asOf → same diffHash verified"
+    },
+    "simulation_endpoint_p92": {
+      "run_endpoint": "POST /api/brain/v2/sim/run with asset, start, end, stepDays, horizons, mode",
+      "report_structure": "id, asset, window, horizons, metrics, samples, verdict",
+      "metrics": "hitRate_off, hitRate_on, deltaPp, avgExposure_off/on, brainFlipRate, avgOverrideIntensity, maxOverrideIntensity, pnlProxy",
+      "verdict": "ready boolean, reasons[], gates with pass/value/threshold",
+      "gates": "deltaHitRateAny (>=+2pp), noDegradation (>=-1pp), brainFlipRate (<=6/year), maxOverrideIntensity (<=0.35)",
+      "samples": "asOf, compare.scenario/delta/severity/reasons, realized returns by horizon"
+    },
+    "status_and_report_retrieval": {
+      "status_list": "GET /api/brain/v2/sim/status returns storedReports array",
+      "status_by_id": "GET /api/brain/v2/sim/status?id=X returns status, window, verdict",
+      "report_retrieval": "GET /api/brain/v2/sim/report?id=X returns full report"
+    },
+    "regression_tests": {
+      "cross_asset": "Working - RISK_ON_SYNC regime",
+      "decision": "Working - TAIL scenario with MoE model",
+      "forecast": "Working - returns byHorizon forecast data"
+    }
+  },
+  "current_state": {
+    "compare": {
+      "asOf": "2026-02-27",
+      "brain_scenario": "TAIL",
+      "base_allocations": {"spxSize": 0.742, "btcSize": 0.764, "cashSize": 0.498},
+      "brain_allocations": {"spxSize": 0.742, "btcSize": 0.764, "cashSize": 0},
+      "diff_delta": {"spx": 0, "btc": 0, "cash": -0.498},
+      "diff_severity": "HIGH",
+      "context_crossAsset": "RISK_ON_SYNC (conf=0.42)",
+      "context_macro": "NEUTRAL"
+    },
+    "simulation": {
+      "test_window": "2025-10-01 to 2025-12-01, step=30d",
+      "hit_rate_improvement": "+33.4pp (30D)",
+      "verdict_ready": false,
+      "gates_passed": ["deltaHitRateAny", "noDegradation", "brainFlipRate"],
+      "gates_failed": ["maxOverrideIntensity (0.498 > 0.35)"]
+    },
+    "notes": "maxOverrideIntensity gate failure is expected - Brain reduces cash by ~50% in TAIL scenario per design"
+  }
+}
