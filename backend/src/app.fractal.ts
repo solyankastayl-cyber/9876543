@@ -600,6 +600,14 @@ async function main() {
   await regimeMemoryRoutes(app);
   console.log('[Fractal] ✅ Regime Memory P10.1 registered at /api/brain/v2/regime-memory/*');
   
+  // ═══════════════════════════════════════════════════════════════
+  // P10.2 — META RISK SCALE (Posture + Caps)
+  // ═══════════════════════════════════════════════════════════════
+  console.log('[Fractal] Registering MetaRisk Scale (P10.2)...');
+  const { metaRiskRoutes } = await import('./modules/brain/routes/meta_risk.routes.js');
+  await metaRiskRoutes(app);
+  console.log('[Fractal] ✅ MetaRisk P10.2 registered at /api/brain/v2/meta-risk/*');
+  
   // Graceful shutdown
   const shutdown = async (signal: string) => {
     console.log(`[Fractal] Received ${signal}, shutting down...`);
