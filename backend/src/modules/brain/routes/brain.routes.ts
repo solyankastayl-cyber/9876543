@@ -45,14 +45,15 @@ export async function brainRoutes(fastify: FastifyInstance): Promise<void> {
   // ─────────────────────────────────────────────────────────────
   
   fastify.get('/api/brain/v2/decision', async (
-    request: FastifyRequest<{ Querystring: { asOf?: string } }>,
+    request: FastifyRequest<{ Querystring: { asOf?: string; withForecast?: string } }>,
     reply: FastifyReply
   ) => {
     const asOf = request.query.asOf || new Date().toISOString().split('T')[0];
+    const withForecast = request.query.withForecast === '1' || request.query.withForecast === 'true';
     
     try {
       const brainService = getBrainOrchestratorService();
-      const decision = await brainService.computeDecision(asOf);
+      const decision = await brainService.computeDecision(asOf, withForecast);
       
       return reply.send(decision);
     } catch (e) {
