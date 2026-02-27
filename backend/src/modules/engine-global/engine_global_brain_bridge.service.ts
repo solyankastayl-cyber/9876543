@@ -53,6 +53,7 @@ export interface BrainSection {
   metaRisk?: MetaRiskSection;
   bridgeSteps?: any[];
   warnings?: string[];
+  optimizer?: OptimizerOutput;  // P11: Optimizer result
 }
 
 export interface EngineGlobalWithBrainResponse extends EngineGlobalResponse {
