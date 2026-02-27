@@ -84,10 +84,17 @@ export async function getEngineGlobalWithBrain(params: {
   const brainService = getBrainOrchestratorService();
   const brainDecision = await brainService.computeDecision(effectiveAsOf);
   
-  // 4. Get MetaRisk (P10.3)
+  // 4. Get MetaRisk (P10.3) - pass brain scenario to avoid circular call
   let metaRiskPack;
   try {
-    metaRiskPack = await getMetaRiskService().getMetaRisk(effectiveAsOf);
+    // Extract brain scenario for MetaRisk
+    const brainScenario = brainDecision?.scenario ? {
+      scenario: brainDecision.scenario.name,
+      pTail: brainDecision.scenario.probabilities?.pTail || 0,
+      pRisk: brainDecision.scenario.probabilities?.pRisk || 0,
+    } : undefined;
+    
+    metaRiskPack = await getMetaRiskService().getMetaRisk(effectiveAsOf, brainScenario);
   } catch (e) {
     console.warn('[EngineBrain] MetaRisk unavailable:', (e as Error).message);
   }
