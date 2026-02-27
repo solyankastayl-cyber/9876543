@@ -46,10 +46,15 @@ export class StressSimulationService {
       try {
         // Get baseline (no brain)
         const engineOff = await buildEngineGlobal(asOf);
+        // Normalize offAlloc (Engine may return unnormalized)
+        const rawSpx = engineOff?.allocations?.spxSize || 0;
+        const rawBtc = engineOff?.allocations?.btcSize || 0;
+        const rawCash = engineOff?.allocations?.cashSize || 0;
+        const rawSum = rawSpx + rawBtc + rawCash || 1;
         const offAlloc = {
-          spx: engineOff?.allocations?.spxSize || 0,
-          btc: engineOff?.allocations?.btcSize || 0,
-          cash: engineOff?.allocations?.cashSize || 0,
+          spx: rawSpx / rawSum,
+          btc: rawBtc / rawSum,
+          cash: rawCash / rawSum,
         };
 
         // Get brain decision with stress overrides injected
