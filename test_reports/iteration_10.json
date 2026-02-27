@@ -1,0 +1,91 @@
+{
+  "summary": "Completed comprehensive testing of P8.0-C Brain Decision Rules Integration. All 25 tests passed. The Quantile Forecast → Brain Decision integration (MoE model) is fully functional.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "observation": "TAIL scenario has 69% probability due to high tailRisk (0.86 on 90D) from MoE model trained with all NEUTRAL regime samples",
+        "impact": "Expected behavior per agent context - model correctly identifies high uncertainty as tail risk"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "GET /api/brain/v2/decision — returns scenario with name (BASE/RISK/TAIL), probs, confidence, description",
+    "GET /api/brain/v2/decision — scenario probs (BASE, RISK, TAIL) sum to approximately 1.0",
+    "GET /api/brain/v2/decision — all scenario probs are >= 0 (non-negative)",
+    "GET /api/brain/v2/decision — directives contain riskMode (RISK_ON, RISK_OFF, NEUTRAL)",
+    "GET /api/brain/v2/decision — evidence has headline, drivers, confidenceFactors",
+    "GET /api/brain/v2/decision — meta has brainVersion 'v2.1.0-moe' and engineVersion 'v2'",
+    "GET /api/brain/v2/decision — meta has inputsHash for determinism",
+    "GET /api/brain/v2/decision?withForecast=1 — includes 'forecasts' object with dxy byHorizon data (30D, 90D, 180D, 365D)",
+    "GET /api/brain/v2/decision?withForecast=1 — includes 'overrideReasoning' with tailAmplified, bullExtension, neutralDampened booleans",
+    "GET /api/brain/v2/decision?withForecast=1 — overrideReasoning has scenarioInputs (maxTailRisk, regimePStress, volSpike, riskScore)",
+    "GET /api/brain/v2/decision?withForecast=1 — includes 'forecastMeta' with modelVersion, isBaseline, trainedAt, regime",
+    "GET /api/brain/v2/decision — determinism: same asOf produces same inputsHash",
+    "GET /api/brain/v2/summary — returns 200",
+    "GET /api/brain/v2/summary — returns condensed view with scenario, riskMode, haircuts, caps, scales, overrideReasoning, forecastSummary",
+    "GET /api/brain/v2/status — returns 200",
+    "GET /api/brain/v2/status — shows brainVersion 'v2.1.0-moe'",
+    "GET /api/brain/v2/status — capabilities list includes quantile_forecast_moe, probabilistic_scenario_engine, forecast_driven_overrides, tail_amplification, bull_extension, neutral_dampening",
+    "POST /api/brain/v2/apply-overrides — returns 200 with valid engineOutput body",
+    "POST /api/brain/v2/apply-overrides — response includes brainDecision with scenario and directives",
+    "POST /api/brain/v2/apply-overrides — response includes 'applied' with allocations, brainApplied, wouldChange",
+    "POST /api/brain/v2/apply-overrides — returns 400 for missing engineOutput (validation)",
+    "GET /api/brain/v2/forecast — still works (regression test)",
+    "GET /api/brain/v2/forecast/status — still works (regression test)",
+    "GET /api/brain/v2/forecast/compare — still works (regression test)"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_brain_decision_p80c.py",
+    "/app/test_reports/pytest/pytest_brain_decision_p80c.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_brain_decision_p80c.py"
+  ],
+  "success_rate": {
+    "backend": "100% (25/25 tests passed)",
+    "frontend": "N/A (backend only testing requested)"
+  },
+  "seed_data_creation": "None - used existing trained MoE model in MongoDB",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "P8.0-C Brain Decision Integration is fully functional. The Brain now correctly uses: WorldState → Quantile Forecast (MoE) → Scenario Engine → Risk Engine → Directives flow. All P8.0-C features verified: tail amplification logic, bull extension, neutral dampening, probabilistic scenario engine, override reasoning. Current decision shows TAIL scenario (69%) with RISK_OFF mode because tailRisk on 90D is 0.86 (high uncertainty from MoE trained with NEUTRAL samples). All forecast endpoints from P8.0-B still work (regression tests passed).",
+  "verified_features": {
+    "decision_endpoint": {
+      "scenario_structure": "name (BASE/RISK/TAIL), probs, confidence, description",
+      "probs_validation": "Sum to ~1.0, all non-negative",
+      "directives": "riskMode (RISK_ON/RISK_OFF/NEUTRAL), caps, scales, haircuts, warnings",
+      "evidence": "headline, drivers, confidenceFactors present",
+      "meta": "brainVersion=v2.1.0-moe, engineVersion=v2, inputsHash present",
+      "determinism": "Same asOf → same inputsHash confirmed"
+    },
+    "decision_with_forecast": {
+      "forecasts_object": "dxy.byHorizon with all 4 horizons (30D, 90D, 180D, 365D)",
+      "override_reasoning": "tailAmplified, bullExtension, neutralDampened booleans + scenarioInputs",
+      "forecast_meta": "modelVersion, isBaseline, trainedAt, regime present"
+    },
+    "summary_endpoint": {
+      "condensed_view": "scenario, riskMode, haircuts, caps, scales, overrideReasoning, forecastSummary"
+    },
+    "status_endpoint": {
+      "brain_version": "v2.1.0-moe",
+      "capabilities": "quantile_forecast_moe, probabilistic_scenario_engine, forecast_driven_overrides, tail_amplification, bull_extension, neutral_dampening"
+    },
+    "apply_overrides_endpoint": {
+      "response_structure": "ok, original, brainDecision, applied, wouldChange",
+      "validation": "Returns 400 for missing engineOutput"
+    },
+    "regression_tests": {
+      "forecast": "Working",
+      "forecast_status": "Working",
+      "forecast_compare": "Working"
+    }
+  }
+}
