@@ -1,14 +1,10 @@
 /**
- * AE/S-Brain v2 — Brain Orchestrator
+ * AE/S-Brain v2 + P8.0-C — Brain Orchestrator
  * 
- * Main intelligence layer. Reads WorldState, outputs BrainOutputPack.
+ * Main intelligence layer. New flow:
+ *   WorldState → Quantile Forecast (MoE) → Scenario Engine → Risk Engine → Directives
  * 
- * Rules v0 (institutional, deterministic):
- * - If guard=BLOCK → caps all risk assets to 0
- * - If guard=CRISIS → BTC haircut stronger than SPX
- * - If STRESS prob > 0.35 → riskMode = RISK_OFF
- * - If liquidity CONTRACTION + negative macro → additional BTC haircut
- * - Scenario probs derived from regime posterior + guard
+ * Guard always has absolute priority over forecast-driven rules.
  */
 
 import { WorldStatePack } from '../contracts/world_state.contract.js';
@@ -17,68 +13,104 @@ import {
   BrainDirectives,
   BrainEvidence,
   ScenarioPack,
-  createNeutralBrainOutput,
 } from '../contracts/brain_output.contract.js';
+import { AssetId } from '../contracts/asset_state.contract.js';
 import { getWorldStateService } from './world_state.service.js';
-
-// ═══════════════════════════════════════════════════════════════
-// THRESHOLDS (institutional)
-// ═══════════════════════════════════════════════════════════════
-
-const THRESHOLDS = {
-  STRESS_PROB_RISK_OFF: 0.35,
-  CRISIS_BTC_HAIRCUT: 0.60,
-  CRISIS_SPX_HAIRCUT: 0.75,
-  WARN_BTC_HAIRCUT: 0.85,
-  WARN_SPX_HAIRCUT: 0.90,
-  CONTRACTION_HAIRCUT: 0.90,
-  BLOCK_MAX_SIZE: 0.05,
-};
+import { getForecastPipelineService } from '../ml/services/forecast_pipeline.service.js';
+import {
+  computeForecastScenario,
+  computeForecastOverrides,
+  OverrideReasoning,
+} from './brain_quantile_rules.service.js';
+import { QuantileForecastResponse } from '../ml/contracts/quantile_forecast.contract.js';
 
 export class BrainOrchestratorService {
   
   /**
    * Main entry: compute Brain decision
+   * @param withForecast - include full forecast in response (for debug)
    */
-  async computeDecision(asOf: string): Promise<BrainOutputPack> {
+  async computeDecision(asOf: string, withForecast: boolean = false): Promise<BrainOutputPack> {
     const startTime = Date.now();
     
-    // Get world state
+    // 1. Get world state
     const worldService = getWorldStateService();
     const world = await worldService.buildWorldState(asOf);
     
-    // Run decision logic
-    const scenario = this.computeScenario(world);
-    const directives = this.computeDirectives(world, scenario);
-    const evidence = this.buildEvidence(world, scenario, directives);
+    // 2. Get quantile forecast from MoE pipeline
+    let forecast: QuantileForecastResponse | null = null;
+    try {
+      const pipeline = getForecastPipelineService();
+      forecast = await pipeline.generateForecast('dxy', asOf);
+    } catch (e) {
+      console.warn('[Brain] Forecast unavailable, using legacy rules:', (e as Error).message);
+    }
     
-    return {
+    let scenario: ScenarioPack;
+    let directives: BrainDirectives;
+    let overrideReasoning: OverrideReasoning | undefined;
+    
+    if (forecast) {
+      // P8.0-C: New forecast-driven flow
+      const scenarioResult = computeForecastScenario(forecast, world);
+      scenario = scenarioResult.scenario;
+      overrideReasoning = scenarioResult.reasoning;
+      directives = computeForecastOverrides(forecast, world, scenario, overrideReasoning);
+    } else {
+      // Legacy rule-based fallback (pre-P8.0-C)
+      scenario = this.computeLegacyScenario(world);
+      directives = this.computeLegacyDirectives(world, scenario);
+    }
+    
+    // 3. Build evidence (enriched with forecast data)
+    const evidence = this.buildEvidence(world, scenario, directives, forecast, overrideReasoning);
+    
+    // 4. Build response
+    const output: BrainOutputPack = {
       asOf,
       scenario,
       directives,
       evidence,
       meta: {
         engineVersion: 'v2',
-        brainVersion: 'v2.0.0',
+        brainVersion: forecast ? 'v2.1.0-moe' : 'v2.0.0-legacy',
         computeTimeMs: Date.now() - startTime,
         inputsHash: world.meta.inputsHash,
       },
     };
+    
+    // Optionally include forecasts
+    if (withForecast && forecast) {
+      output.forecasts = {
+        dxy: {
+          byHorizon: forecast.byHorizon,
+        },
+      };
+      // Attach override reasoning for debug
+      (output as any).overrideReasoning = overrideReasoning;
+      (output as any).forecastMeta = {
+        modelVersion: forecast.model.modelVersion,
+        isBaseline: forecast.model.isBaseline,
+        trainedAt: forecast.model.trainedAt,
+        regime: forecast.regime,
+      };
+    }
+    
+    return output;
   }
   
-  /**
-   * Compute scenario (BASE/RISK/TAIL) from world state
-   */
-  private computeScenario(world: WorldStatePack): ScenarioPack {
+  // ═══════════════════════════════════════════════════════════════
+  // LEGACY RULES (fallback when forecast unavailable)
+  // ═══════════════════════════════════════════════════════════════
+  
+  private computeLegacyScenario(world: WorldStatePack): ScenarioPack {
     const dxy = world.assets.dxy;
     const regimePosterior = dxy?.macroV2?.regime.probs || {};
     const guardLevel = dxy?.guard?.level || 'NONE';
     
-    // Base probabilities from regime
     let stressProb = regimePosterior['STRESS'] || 0;
-    let tailProb = 0.05; // baseline
+    let tailProb = 0.05;
     
-    // Adjust based on guard
     if (guardLevel === 'CRISIS') {
       stressProb = Math.max(stressProb, 0.4);
       tailProb = 0.25;
@@ -90,24 +122,17 @@ export class BrainOrchestratorService {
       tailProb = 0.15;
     }
     
-    // Liquidity contraction adds to stress
     if (world.assets.dxy?.liquidity?.regime === 'CONTRACTION') {
       stressProb += 0.10;
     }
     
-    // Clamp
     stressProb = Math.min(stressProb, 0.7);
     tailProb = Math.min(tailProb, 0.4);
-    
     const baseProb = Math.max(0, 1 - stressProb - tailProb);
     
-    // Determine dominant scenario
-    let name: ScenarioPack['name'] = 'BASE';
-    if (tailProb >= 0.25) {
-      name = 'TAIL';
-    } else if (stressProb >= 0.35) {
-      name = 'RISK';
-    }
+    let name: 'BASE' | 'RISK' | 'TAIL' = 'BASE';
+    if (tailProb >= 0.25) name = 'TAIL';
+    else if (stressProb >= 0.35) name = 'RISK';
     
     return {
       name,
@@ -117,14 +142,11 @@ export class BrainOrchestratorService {
         TAIL: Math.round(tailProb * 100) / 100,
       },
       confidence: dxy?.macroV2?.confidence || 0.5,
-      description: this.getScenarioDescription(name, world),
+      description: `Legacy rule-based scenario. ${dxy?.macroV2?.regime.name || 'UNKNOWN'} regime.`,
     };
   }
   
-  /**
-   * Compute directives based on world state and scenario
-   */
-  private computeDirectives(world: WorldStatePack, scenario: ScenarioPack): BrainDirectives {
+  private computeLegacyDirectives(world: WorldStatePack, scenario: ScenarioPack): BrainDirectives {
     const directives: BrainDirectives = {
       caps: {},
       scales: {},
@@ -137,138 +159,119 @@ export class BrainOrchestratorService {
     const liquidityRegime = dxy?.liquidity?.regime || 'NEUTRAL';
     const macroScore = dxy?.macroV2?.scoreSigned || 0;
     
-    // Rule 1: BLOCK → zero all risk
     if (guardLevel === 'BLOCK') {
-      directives.caps = {
-        spx: { maxSize: THRESHOLDS.BLOCK_MAX_SIZE },
-        btc: { maxSize: THRESHOLDS.BLOCK_MAX_SIZE },
-      };
+      directives.caps = { spx: { maxSize: 0.05 }, btc: { maxSize: 0.05 } };
       directives.riskMode = 'RISK_OFF';
-      directives.warnings?.push('GUARD BLOCK: All risk assets capped to near-zero');
-    }
-    
-    // Rule 2: CRISIS → strong haircuts
-    else if (guardLevel === 'CRISIS') {
-      directives.haircuts = {
-        btc: THRESHOLDS.CRISIS_BTC_HAIRCUT,
-        spx: THRESHOLDS.CRISIS_SPX_HAIRCUT,
-      };
+      directives.warnings!.push('GUARD BLOCK: All risk assets capped');
+    } else if (guardLevel === 'CRISIS') {
+      directives.haircuts = { btc: 0.60, spx: 0.75 };
       directives.riskMode = 'RISK_OFF';
-      directives.warnings?.push('GUARD CRISIS: BTC haircut stronger than SPX');
+      directives.warnings!.push('GUARD CRISIS: Strong haircuts');
+    } else if (guardLevel === 'WARN') {
+      directives.haircuts = { btc: 0.85, spx: 0.90 };
+      directives.warnings!.push('GUARD WARN: Moderate reduction');
     }
     
-    // Rule 3: WARN → light haircuts
-    else if (guardLevel === 'WARN') {
-      directives.haircuts = {
-        btc: THRESHOLDS.WARN_BTC_HAIRCUT,
-        spx: THRESHOLDS.WARN_SPX_HAIRCUT,
-      };
-      directives.warnings?.push('GUARD WARN: Moderate risk reduction');
-    }
-    
-    // Rule 4: STRESS regime high prob → RISK_OFF
-    if (scenario.probs.RISK >= THRESHOLDS.STRESS_PROB_RISK_OFF) {
+    if (scenario.probs.RISK >= 0.35) {
       directives.riskMode = 'RISK_OFF';
-      if (!directives.warnings?.some(w => w.includes('RISK_OFF'))) {
-        directives.warnings?.push(`STRESS probability ${(scenario.probs.RISK * 100).toFixed(0)}% → RISK_OFF mode`);
-      }
     }
     
-    // Rule 5: Liquidity CONTRACTION + negative macro → extra BTC haircut
     if (liquidityRegime === 'CONTRACTION' && macroScore < 0) {
-      const existingBtcHaircut = directives.haircuts?.btc || 1;
       directives.haircuts = {
         ...directives.haircuts,
-        btc: Math.min(existingBtcHaircut, THRESHOLDS.CONTRACTION_HAIRCUT),
-      };
-      directives.warnings?.push('Liquidity CONTRACTION + negative macro: Extra BTC haircut');
-    }
-    
-    // Rule 6: If everything is fine → RISK_ON potential
-    if (guardLevel === 'NONE' && 
-        scenario.name === 'BASE' && 
-        liquidityRegime === 'EXPANSION' &&
-        macroScore > 0.3) {
-      directives.riskMode = 'RISK_ON';
-      directives.scales = {
-        spx: { sizeScale: 1.1 },
-        btc: { sizeScale: 1.15 },
+        btc: Math.min(directives.haircuts?.btc ?? 1, 0.90),
       };
     }
     
-    // Default to NEUTRAL if not set
-    if (!directives.riskMode) {
-      directives.riskMode = 'NEUTRAL';
-    }
+    if (!directives.riskMode) directives.riskMode = 'NEUTRAL';
     
     return directives;
   }
   
-  /**
-   * Build evidence pack
-   */
+  // ═══════════════════════════════════════════════════════════════
+  // EVIDENCE BUILDER (enriched with forecast)
+  // ═══════════════════════════════════════════════════════════════
+  
   private buildEvidence(
     world: WorldStatePack,
     scenario: ScenarioPack,
-    directives: BrainDirectives
+    directives: BrainDirectives,
+    forecast: QuantileForecastResponse | null,
+    reasoning?: OverrideReasoning
   ): BrainEvidence {
     const dxy = world.assets.dxy;
     const drivers: string[] = [];
     const conflicts: string[] = [];
     const whatWouldFlip: string[] = [];
     
-    // Add regime driver
+    // Forecast-driven drivers
+    if (forecast) {
+      const mean90 = forecast.byHorizon['90D']?.mean || 0;
+      const tailRisk90 = forecast.byHorizon['90D']?.tailRisk || 0;
+      const direction = mean90 > 0 ? 'Bullish' : 'Bearish';
+      drivers.push(`MoE Forecast (90D): ${direction} ${(mean90 * 100).toFixed(1)}%, TailRisk=${tailRisk90.toFixed(2)}`);
+      
+      if (forecast.model.isBaseline) {
+        drivers.push('Model: BASELINE (not trained)');
+      } else {
+        drivers.push(`Model: ${forecast.model.modelVersion} (trained ${forecast.model.trainedAt?.split('T')[0]})`);
+      }
+    }
+    
+    // Regime driver
     if (dxy?.macroV2?.regime.name) {
       drivers.push(`Macro Regime: ${dxy.macroV2.regime.name}`);
     }
     
-    // Add guard driver
+    // Guard driver
     if (dxy?.guard?.level && dxy.guard.level !== 'NONE') {
       drivers.push(`Guard Level: ${dxy.guard.level}`);
     }
     
-    // Add liquidity driver
+    // Liquidity driver
     if (dxy?.liquidity?.regime) {
       drivers.push(`Liquidity: ${dxy.liquidity.regime}`);
     }
     
-    // Add macro score driver
-    if (dxy?.macroV2?.scoreSigned !== undefined) {
-      const scoreStr = dxy.macroV2.scoreSigned > 0 
-        ? `+${dxy.macroV2.scoreSigned.toFixed(2)}` 
-        : dxy.macroV2.scoreSigned.toFixed(2);
-      drivers.push(`Macro Score: ${scoreStr}`);
+    // Override reasoning drivers
+    if (reasoning?.tailAmplified) {
+      drivers.push(`Tail Amplified: q05=${(reasoning.tailAmplificationDetails!.q05 * 100).toFixed(1)}%`);
     }
-    
-    // Add key macro drivers
-    const topDrivers = dxy?.macroV2?.keyDrivers?.slice(0, 3) || [];
-    for (const d of topDrivers) {
-      drivers.push(`${d.key}: ${d.direction} (${(d.strength * 100).toFixed(0)}%)`);
+    if (reasoning?.bullExtension) {
+      drivers.push(`Bull Extension: sizeScale ×${reasoning.bullExtensionDetails!.sizeScale}`);
+    }
+    if (reasoning?.neutralDampened) {
+      drivers.push(`Neutral Dampened: spread=${(reasoning.neutralDampeningDetails!.spread * 100).toFixed(1)}%`);
     }
     
     // Detect conflicts
-    if (dxy?.liquidity?.regime === 'EXPANSION' && dxy?.macroV2?.regime.name === 'TIGHTENING') {
-      conflicts.push('Liquidity expanding but Fed tightening — may reverse');
-    }
-    if (dxy?.guard?.level === 'CRISIS' && scenario.name === 'BASE') {
-      conflicts.push('Guard CRISIS but scenario BASE — anomaly');
+    if (forecast) {
+      const mean90 = forecast.byHorizon['90D']?.mean || 0;
+      const tailRisk90 = forecast.byHorizon['90D']?.tailRisk || 0;
+      
+      if (mean90 > 0.02 && tailRisk90 > 0.4) {
+        conflicts.push('Forecast bullish but tail risk elevated — mixed signal');
+      }
+      if (dxy?.guard?.level === 'CRISIS' && scenario.name === 'BASE') {
+        conflicts.push('Guard CRISIS but scenario BASE — anomaly');
+      }
     }
     
     // What would flip
     if (scenario.name === 'BASE') {
+      whatWouldFlip.push('TailRisk spike above 0.35');
       whatWouldFlip.push('Guard escalation to CRISIS/BLOCK');
-      whatWouldFlip.push('STRESS probability spike above 35%');
+      whatWouldFlip.push('q05 drop below horizon threshold');
     }
-    if (scenario.name === 'RISK') {
-      whatWouldFlip.push('STRESS probability drop below 25%');
-      whatWouldFlip.push('Liquidity shift to EXPANSION');
-    }
-    if (directives.riskMode === 'RISK_OFF') {
-      whatWouldFlip.push('Guard deescalation to NONE/WARN');
+    if (scenario.name === 'RISK' || scenario.name === 'TAIL') {
+      whatWouldFlip.push('TailRisk drop below 0.20');
+      whatWouldFlip.push('Guard deescalation to NONE');
+      whatWouldFlip.push('Mean turning positive with low uncertainty');
     }
     
     // Build headline
-    const headline = `${scenario.name} scenario (${(scenario.confidence * 100).toFixed(0)}% conf) | ${directives.riskMode} mode`;
+    const forecastTag = forecast ? ` [MoE ${forecast.model.modelVersion}]` : ' [legacy]';
+    const headline = `${scenario.name} scenario (${(scenario.confidence * 100).toFixed(0)}% conf) | ${directives.riskMode} mode${forecastTag}`;
     
     return {
       headline,
@@ -276,28 +279,11 @@ export class BrainOrchestratorService {
       conflicts: conflicts.length > 0 ? conflicts : undefined,
       whatWouldFlip: whatWouldFlip.length > 0 ? whatWouldFlip : undefined,
       confidenceFactors: [
-        `Regime confidence: ${((dxy?.macroV2?.confidence || 0) * 100).toFixed(0)}%`,
+        `Scenario confidence: ${(scenario.confidence * 100).toFixed(0)}%`,
+        `Model: ${forecast?.model.isBaseline ? 'BASELINE' : forecast?.model.modelVersion || 'N/A'}`,
         `System health: ${world.global.systemHealth?.status || 'UNKNOWN'}`,
       ],
     };
-  }
-  
-  /**
-   * Get scenario description
-   */
-  private getScenarioDescription(name: ScenarioPack['name'], world: WorldStatePack): string {
-    const regime = world.assets.dxy?.macroV2?.regime.name;
-    
-    switch (name) {
-      case 'BASE':
-        return `Normal market conditions. ${regime} regime continues. Risk assets maintain allocation.`;
-      case 'RISK':
-        return `Elevated stress signals. ${regime} regime with potential deterioration. Reduce risk exposure.`;
-      case 'TAIL':
-        return `Crisis conditions detected. Severe risk-off required. Preserve capital priority.`;
-      default:
-        return 'Unknown scenario';
-    }
   }
 }
 
