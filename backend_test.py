@@ -177,7 +177,8 @@ class FractalAPITester:
         if failed_tests:
             print("❌ FAILED TESTS:")
             for test in failed_tests:
-                print(f"  - {test['test']}: {test['error'] or f'HTTP {test['status_code']}'}")
+                error_msg = test['error'] or f"HTTP {test['status_code']}"
+                print(f"  - {test['test']}: {error_msg}")
             print()
 
         # Save detailed results
