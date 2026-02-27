@@ -178,3 +178,55 @@ WorldState → extractMacro/Guard/CrossAsset → updateScope → MongoDB
 | crossAsset | RISK_ON_SYNC | 57 | 0.817 |
 
 ### Next: P10.2 — MetaRisk Scale
+
+## P10.2 — MetaRisk Scale (IMPLEMENTED 2026-02-27)
+
+### Formula
+```
+metaRiskScale = clamp(1.0 + Σcomponents, 0.60, 1.10)
+
+Components:
+- durationBoost:  EASING +0.08, NEUTRAL +0.03, TIGHTENING -0.06, STRESS -0.10
+- stabilityBoost: +0.05 * sat((stability-0.65)/0.25)
+- flipPenalty:    -0.10 * sat(flips30d/6)
+- guardDrag:      BLOCK -0.40, CRISIS -0.25, WARN -0.10
+- crossAssetAdj:  RISK_ON_SYNC +0.03, DECOUPLED -0.05, FLIGHT_TO_QUALITY -0.10
+- scenarioAdj:    TAIL -0.25, RISK -0.12, BASE +0.02
+```
+
+### Posture + Cap
+| Posture | Condition | Base Cap |
+|---------|-----------|----------|
+| OFFENSIVE | scale ≥ 1.03 | 0.45 |
+| NEUTRAL | 0.92 < scale < 1.03 | 0.35 |
+| DEFENSIVE | scale ≤ 0.92 OR guard/scenario | 0.25 |
+
+TAIL scenario allows cap up to 0.60 (risk-down only)
+
+### Test Gates (ALL PASSED)
+- ✅ Determinism: same asOf → same result
+- ✅ Monotonic duration: EASING boost positive
+- ✅ Guard dominance: BLOCK → scale ≤ 0.70
+- ✅ Flip penalty: 6 flips → -0.10
+- ✅ Cap correctness: TAIL → cap 0.60 + DEFENSIVE
+
+### Current Values (2026-02-27)
+| Metric | Value |
+|--------|-------|
+| metaRiskScale | 1.086 |
+| posture | OFFENSIVE |
+| maxOverrideCap | 0.45 |
+| durationBoost | +0.003 |
+| stabilityBoost | +0.033 |
+| crossAssetAdj | +0.03 |
+| scenarioAdj | +0.02 |
+
+### API Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| /api/brain/v2/meta-risk | GET | Current MetaRisk |
+| /api/brain/v2/meta-risk/schema | GET | Schema docs |
+| /api/brain/v2/meta-risk/timeline | GET | Historical |
+| /api/brain/v2/meta-risk/simulate | POST | Test with overrides |
+
+### Next: P10.3 — Integration into Brain/Engine
