@@ -1,0 +1,92 @@
+{
+  "summary": {
+    "tests_run": 9,
+    "tests_passed": 6,
+    "success_rate": 66.66666666666666,
+    "timestamp": "2026-02-27T21:13:05.768008",
+    "backend_url": "https://fractal-index-1.preview.emergentagent.com"
+  },
+  "results": [
+    {
+      "test": "Health Check",
+      "success": true,
+      "status_code": 200,
+      "timestamp": "2026-02-27T21:11:03.950446",
+      "error": null,
+      "response_summary": {
+        "status": "ok"
+      }
+    },
+    {
+      "test": "Brain v2 Status",
+      "success": true,
+      "status_code": 200,
+      "timestamp": "2026-02-27T21:11:04.190603",
+      "error": null,
+      "response_summary": {
+        "ok": true
+      }
+    },
+    {
+      "test": "Stress Presets",
+      "success": true,
+      "status_code": 200,
+      "timestamp": "2026-02-27T21:11:04.366076",
+      "error": null,
+      "response_summary": {
+        "ok": true
+      }
+    },
+    {
+      "test": "Stress Simulation Run",
+      "success": false,
+      "status_code": 0,
+      "timestamp": "2026-02-27T21:11:34.441596",
+      "error": "Request timeout (30s)"
+    },
+    {
+      "test": "Cross-Asset Regime",
+      "success": true,
+      "status_code": 200,
+      "timestamp": "2026-02-27T21:11:34.754655",
+      "error": null,
+      "response_summary": {
+        "ok": true
+      }
+    },
+    {
+      "test": "Engine Global Allocations",
+      "success": true,
+      "status_code": 200,
+      "timestamp": "2026-02-27T21:11:34.985317",
+      "error": null,
+      "response_summary": {
+        "ok": true
+      }
+    },
+    {
+      "test": "Platform Crash-Test",
+      "success": false,
+      "status_code": 0,
+      "timestamp": "2026-02-27T21:12:35.096386",
+      "error": "Timeout - test may be too intensive"
+    },
+    {
+      "test": "Brain Compare",
+      "success": false,
+      "status_code": 0,
+      "timestamp": "2026-02-27T21:13:05.210403",
+      "error": "Request timeout (30s)"
+    },
+    {
+      "test": "Brain Features",
+      "success": true,
+      "status_code": 200,
+      "timestamp": "2026-02-27T21:13:05.765012",
+      "error": null,
+      "response_summary": {
+        "ok": true
+      }
+    }
+  ]
+}
