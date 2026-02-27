@@ -608,6 +608,14 @@ async function main() {
   await metaRiskRoutes(app);
   console.log('[Fractal] ✅ MetaRisk P10.2 registered at /api/brain/v2/meta-risk/*');
   
+  // ═══════════════════════════════════════════════════════════════
+  // P11 — CAPITAL ALLOCATION OPTIMIZER
+  // ═══════════════════════════════════════════════════════════════
+  console.log('[Fractal] Registering Optimizer (P11)...');
+  const { optimizerRoutes } = await import('./modules/brain/optimizer/optimizer.routes.js');
+  await optimizerRoutes(app);
+  console.log('[Fractal] ✅ Optimizer P11 registered at /api/brain/v2/optimizer/*');
+  
   // Graceful shutdown
   const shutdown = async (signal: string) => {
     console.log(`[Fractal] Received ${signal}, shutting down...`);
