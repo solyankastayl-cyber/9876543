@@ -142,7 +142,11 @@ export class RegimeMemoryService {
       doc.daysInState = 0;
       doc.previousStates = newPreviousStates;
     } else {
-      // Same regime: increment days
+      // Same regime: calculate days from since to asOf
+      // Only update since if asOf is earlier (backfill scenario)
+      if (asOfDate < doc.since) {
+        doc.since = asOfDate;
+      }
       doc.daysInState = this.daysBetween(doc.since, asOfDate);
     }
 
