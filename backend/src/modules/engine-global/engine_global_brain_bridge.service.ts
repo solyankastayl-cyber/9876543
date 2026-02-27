@@ -1,16 +1,20 @@
 /**
- * ENGINE GLOBAL + BRAIN BRIDGE — P7.0
+ * ENGINE GLOBAL + BRAIN BRIDGE — P7.0 + P10.3
  * 
  * Integration layer between EngineGlobal and Brain v2.
  * Supports three modes:
  * - off: Return base engine output (no brain)
  * - shadow: Return base output + what brain WOULD do
- * - on: Apply brain overrides to allocations
+ * - on: Apply brain overrides + MetaRisk to allocations
+ * 
+ * P10.3: Adds MetaRisk shrink logic and globalScale application
  */
 
 import { buildEngineGlobal } from './engine_global.service.js';
 import { getBrainOrchestratorService } from '../brain/services/brain_orchestrator.service.js';
 import { getBrainOverrideApplyService } from '../brain/services/brain_override_apply.service.js';
+import { getMetaRiskService } from '../brain/services/meta_risk.service.js';
+import { applyBrainBridge, validateBridgeOutput } from './brain_bridge.service.js';
 import type { EngineGlobalResponse, EngineAllocation } from './engine_global.contract.js';
 import type { BrainOutputPack } from '../brain/contracts/brain_output.contract.js';
 
@@ -28,10 +32,24 @@ export interface BrainWouldApply {
   reasons: string[];
 }
 
+export interface MetaRiskSection {
+  posture: string;
+  globalScale: number;
+  maxOverrideCap: number;
+  intensityBefore: number;
+  intensityAfter: number;
+  shrinkApplied: boolean;
+  shrinkFactor?: number;
+  tailRiskClamp: boolean;
+}
+
 export interface BrainSection {
   mode: BrainMode;
   decision?: BrainOutputPack;
   wouldApply?: BrainWouldApply;
+  metaRisk?: MetaRiskSection;
+  bridgeSteps?: any[];
+  warnings?: string[];
 }
 
 export interface EngineGlobalWithBrainResponse extends EngineGlobalResponse {
@@ -39,15 +57,17 @@ export interface EngineGlobalWithBrainResponse extends EngineGlobalResponse {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// MAIN BRIDGE FUNCTION
+// MAIN BRIDGE FUNCTION (P10.3 Enhanced)
 // ═══════════════════════════════════════════════════════════════
 
 export async function getEngineGlobalWithBrain(params: {
   asOf?: string;
   brain?: boolean;
   brainMode?: BrainMode;
+  optimizer?: boolean;  // P11 placeholder
 }): Promise<EngineGlobalWithBrainResponse> {
   const { asOf, brain = false, brainMode = 'off' } = params;
+  const effectiveAsOf = asOf || new Date().toISOString().split('T')[0];
   
   // 1. Get base engine output
   const engineOut = await buildEngineGlobal(asOf);
@@ -62,11 +82,54 @@ export async function getEngineGlobalWithBrain(params: {
   
   // 3. Get brain decision
   const brainService = getBrainOrchestratorService();
-  const brainDecision = await brainService.computeDecision(
-    asOf || new Date().toISOString().split('T')[0]
-  );
+  const brainDecision = await brainService.computeDecision(effectiveAsOf);
   
-  // 4. Convert engine allocations to format brain expects
+  // 4. Get MetaRisk (P10.3)
+  let metaRiskPack;
+  try {
+    metaRiskPack = await getMetaRiskService().getMetaRisk(effectiveAsOf);
+  } catch (e) {
+    console.warn('[EngineBrain] MetaRisk unavailable:', (e as Error).message);
+  }
+  
+  // 5. Shadow mode: return base allocations + what brain would do
+  if (brainMode === 'shadow') {
+    // Use old method for shadow comparison
+    const engineAllocationsForBrain = {
+      allocations: {
+        spx: { size: engineOut.allocations.spxSize, direction: 'LONG' },
+        btc: { size: engineOut.allocations.btcSize, direction: 'LONG' },
+        dxy: { size: engineOut.allocations.dxySize, direction: 'LONG' },
+      },
+      cash: engineOut.allocations.cashSize,
+    };
+    
+    const applyService = getBrainOverrideApplyService();
+    const applied = applyService.applyOverrides(engineAllocationsForBrain, brainDecision);
+    const wouldApply = computeDiff(engineOut.allocations, applied);
+    
+    return {
+      ...engineOut,
+      brain: {
+        mode: 'shadow',
+        decision: brainDecision,
+        wouldApply,
+        metaRisk: metaRiskPack ? {
+          posture: metaRiskPack.posture,
+          globalScale: metaRiskPack.metaRiskScale,
+          maxOverrideCap: metaRiskPack.maxOverrideCap,
+          intensityBefore: 0,
+          intensityAfter: 0,
+          shrinkApplied: false,
+          tailRiskClamp: false,
+        } : undefined,
+      },
+    };
+  }
+  
+  // 6. ON MODE: Apply brain overrides + MetaRisk shrink (P10.3)
+  
+  // First apply basic brain overrides to get "after brain" allocations
   const engineAllocationsForBrain = {
     allocations: {
       spx: { size: engineOut.allocations.spxSize, direction: 'LONG' },
@@ -76,41 +139,49 @@ export async function getEngineGlobalWithBrain(params: {
     cash: engineOut.allocations.cashSize,
   };
   
-  // 5. Apply brain overrides
   const applyService = getBrainOverrideApplyService();
-  const applied = applyService.applyOverrides(engineAllocationsForBrain, brainDecision);
+  const brainApplied = applyService.applyOverrides(engineAllocationsForBrain, brainDecision);
   
-  // 6. Shadow mode: return base allocations + what brain would do
-  if (brainMode === 'shadow') {
-    const wouldApply = computeDiff(engineOut.allocations, applied);
-    
-    return {
-      ...engineOut,
-      brain: {
-        mode: 'shadow',
-        decision: brainDecision,
-        wouldApply,
-      },
-    };
+  // Convert to intermediate allocations
+  const afterBrainAllocations: EngineAllocation = {
+    spxSize: brainApplied.allocations?.spx?.size ?? engineOut.allocations.spxSize,
+    btcSize: brainApplied.allocations?.btc?.size ?? engineOut.allocations.btcSize,
+    dxySize: brainApplied.allocations?.dxy?.size ?? engineOut.allocations.dxySize,
+    cashSize: brainApplied.cash ?? engineOut.allocations.cashSize,
+  };
+  
+  // Apply Brain Bridge with MetaRisk (P10.3 shrink + scale)
+  const bridgeResult = applyBrainBridge({
+    baseAllocations: engineOut.allocations,
+    brainOutput: brainDecision,
+    metaRisk: metaRiskPack,
+    minCash: 0.05,
+  });
+  
+  // Validate bridge output
+  const validation = validateBridgeOutput(bridgeResult);
+  if (!validation.valid) {
+    console.error('[EngineBrain] Bridge validation failed:', validation.errors);
+    bridgeResult.warnings.push(...validation.errors.map(e => `VALIDATION: ${e}`));
   }
-  
-  // 7. On mode: return modified allocations
-  const modifiedAllocations = applyToEngineFormat(applied);
   
   // Update evidence with brain info
   const enhancedEvidence = {
     ...engineOut.evidence,
-    headline: `${engineOut.evidence.headline} | Brain: ${brainDecision.scenario.name}`,
-    brainOverrides: applied.brainEvidence || [],
+    headline: `${engineOut.evidence.headline} | Brain: ${brainDecision.scenario.name} | Posture: ${bridgeResult.metaRisk.posture}`,
+    brainOverrides: brainApplied.brainEvidence || [],
   };
   
   return {
     ...engineOut,
-    allocations: modifiedAllocations,
+    allocations: bridgeResult.allocations,
     evidence: enhancedEvidence as any,
     brain: {
       mode: 'on',
       decision: brainDecision,
+      metaRisk: bridgeResult.metaRisk,
+      bridgeSteps: bridgeResult.steps,
+      warnings: bridgeResult.warnings,
     },
   };
 }
@@ -137,28 +208,6 @@ function computeDiff(
     dxyDelta: Math.round((dxyApplied - base.dxySize) * 1000) / 1000,
     cashDelta: Math.round((cashApplied - base.cashSize) * 1000) / 1000,
     reasons: applied.brainEvidence || [],
-  };
-}
-
-function applyToEngineFormat(applied: any): EngineAllocation {
-  const spxSize = applied.allocations?.spx?.size ?? 0;
-  const btcSize = applied.allocations?.btc?.size ?? 0;
-  const dxySize = applied.allocations?.dxy?.size ?? 0;
-  
-  // Clamp all to [0, 1]
-  const clampedSpx = Math.max(0, Math.min(1, spxSize));
-  const clampedBtc = Math.max(0, Math.min(1, btcSize));
-  const clampedDxy = Math.max(0, Math.min(1, dxySize));
-  
-  // Calculate cash
-  const totalRisk = clampedSpx + clampedBtc + clampedDxy;
-  const cashSize = Math.max(0, 1 - totalRisk);
-  
-  return {
-    spxSize: clampedSpx,
-    btcSize: clampedBtc,
-    dxySize: clampedDxy,
-    cashSize,
   };
 }
 
