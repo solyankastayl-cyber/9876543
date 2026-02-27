@@ -197,53 +197,100 @@ export class RegimeMemoryService {
     const points: RegimeTimelinePoint[] = [];
     const dates = this.generateDates(start, end, stepDays);
 
+    // Limit to 100 points max for performance
+    const limitedDates = dates.slice(0, 100);
+    if (dates.length > 100) {
+      console.warn(`[RegimeMemory] Timeline limited to 100 points (requested ${dates.length})`);
+    }
+
     let macroFlips = 0, guardFlips = 0, crossAssetFlips = 0;
     let macroStabilitySum = 0, guardStabilitySum = 0, crossAssetStabilitySum = 0;
     const macroValues: string[] = [];
     const guardValues: string[] = [];
     const crossAssetValues: string[] = [];
 
-    for (let i = 0; i < dates.length; i++) {
-      const asOf = dates[i];
+    // Batch fetch history for efficiency
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const historyMap = new Map<string, { macro?: string; guard?: string; crossAsset?: string }>();
+    
+    const allHistory = await RegimeHistoryModel.find({
+      date: { $gte: startDate, $lte: endDate }
+    }).sort({ date: 1 }).lean();
+    
+    for (const h of allHistory) {
+      const dateKey = h.date.toISOString().split('T')[0];
+      if (!historyMap.has(dateKey)) {
+        historyMap.set(dateKey, {});
+      }
+      historyMap.get(dateKey)![h.scope as RegimeScope] = h.value;
+    }
+
+    // Get current state for since dates
+    const [macroDoc, guardDoc, crossAssetDoc] = await Promise.all([
+      RegimeMemoryModel.findOne({ scope: 'macro' }).lean(),
+      RegimeMemoryModel.findOne({ scope: 'guard' }).lean(),
+      RegimeMemoryModel.findOne({ scope: 'crossAsset' }).lean(),
+    ]);
+
+    const sinceMap = {
+      macro: macroDoc?.since ? new Date(macroDoc.since) : new Date(start),
+      guard: guardDoc?.since ? new Date(guardDoc.since) : new Date(start),
+      crossAsset: crossAssetDoc?.since ? new Date(crossAssetDoc.since) : new Date(start),
+    };
+
+    for (let i = 0; i < limitedDates.length; i++) {
+      const asOf = limitedDates[i];
+      const asOfDate = new Date(asOf);
       
-      try {
-        const pack = await this.getCurrent(asOf);
-        
-        points.push({
-          asOf,
-          macro: { 
-            value: pack.macro.current, 
-            daysInState: pack.macro.daysInState, 
-            stability: pack.macro.stability 
-          },
-          guard: { 
-            value: pack.guard.current, 
-            daysInState: pack.guard.daysInState, 
-            stability: pack.guard.stability 
-          },
-          crossAsset: { 
-            value: pack.crossAsset.current, 
-            daysInState: pack.crossAsset.daysInState, 
-            stability: pack.crossAsset.stability 
-          },
-        });
+      // Get values from history map or use defaults
+      const entry = historyMap.get(asOf) || {};
+      const macroVal = entry.macro || 'NEUTRAL';
+      const guardVal = entry.guard || 'NONE';
+      const crossAssetVal = entry.crossAsset || 'MIXED';
 
-        macroStabilitySum += pack.macro.stability;
-        guardStabilitySum += pack.guard.stability;
-        crossAssetStabilitySum += pack.crossAsset.stability;
+      // Calculate days and stability
+      const macroDays = Math.max(0, this.daysBetween(sinceMap.macro, asOfDate));
+      const guardDays = Math.max(0, this.daysBetween(sinceMap.guard, asOfDate));
+      const crossAssetDays = Math.max(0, this.daysBetween(sinceMap.crossAsset, asOfDate));
 
-        macroValues.push(pack.macro.current);
-        guardValues.push(pack.guard.current);
-        crossAssetValues.push(pack.crossAsset.current);
+      // Approximate flips (from history)
+      const macroFlips30d = await this.countFlips('macro', asOf, 30);
+      const guardFlips30d = await this.countFlips('guard', asOf, 30);
+      const crossAssetFlips30d = await this.countFlips('crossAsset', asOf, 30);
 
-        // Count flips from previous point
-        if (i > 0) {
-          if (macroValues[i] !== macroValues[i - 1]) macroFlips++;
-          if (guardValues[i] !== guardValues[i - 1]) guardFlips++;
-          if (crossAssetValues[i] !== crossAssetValues[i - 1]) crossAssetFlips++;
-        }
-      } catch (e) {
-        console.warn(`[RegimeMemory] Timeline error at ${asOf}:`, (e as Error).message);
+      points.push({
+        asOf,
+        macro: { 
+          value: macroVal, 
+          daysInState: macroDays, 
+          stability: computeStability(macroDays, macroFlips30d)
+        },
+        guard: { 
+          value: guardVal, 
+          daysInState: guardDays, 
+          stability: computeStability(guardDays, guardFlips30d)
+        },
+        crossAsset: { 
+          value: crossAssetVal, 
+          daysInState: crossAssetDays, 
+          stability: computeStability(crossAssetDays, crossAssetFlips30d)
+        },
+      });
+
+      macroStabilitySum += computeStability(macroDays, macroFlips30d);
+      guardStabilitySum += computeStability(guardDays, guardFlips30d);
+      crossAssetStabilitySum += computeStability(crossAssetDays, crossAssetFlips30d);
+
+      macroValues.push(macroVal);
+      guardValues.push(guardVal);
+      crossAssetValues.push(crossAssetVal);
+
+      // Count flips from previous point
+      if (i > 0) {
+        if (macroValues[i] !== macroValues[i - 1]) macroFlips++;
+        if (guardValues[i] !== guardValues[i - 1]) guardFlips++;
+        if (crossAssetValues[i] !== crossAssetValues[i - 1]) crossAssetFlips++;
       }
     }
 
