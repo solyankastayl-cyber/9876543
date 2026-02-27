@@ -308,6 +308,17 @@ export class BrainOrchestratorService {
       }
     }
     
+    // P9.0: Cross-asset driver
+    if (world.crossAsset) {
+      const ca = world.crossAsset;
+      drivers.push(`Cross-Asset: ${ca.regime.label} (conf=${ca.regime.confidence.toFixed(2)}, contagion=${ca.diagnostics.contagionScore.toFixed(2)})`);
+      
+      const w60 = ca.windows.find(w => w.windowDays === 60);
+      if (w60) {
+        drivers.push(`BTC-SPX corr(60d)=${w60.corr_btc_spx}, SPX-DXY corr(60d)=${w60.corr_spx_dxy}`);
+      }
+    }
+    
     // Regime driver
     if (dxy?.macroV2?.regime.name) {
       drivers.push(`Macro Regime: ${dxy.macroV2.regime.name}`);
