@@ -1,0 +1,76 @@
+{
+  "summary": {
+    "module": "P10.1 Regime Memory State",
+    "tests_run": 8,
+    "tests_passed": 7,
+    "success_rate": 87.5,
+    "timestamp": "2026-02-27T21:42:36.722428",
+    "backend_url": "https://fractal-index-1.preview.emergentagent.com"
+  },
+  "results": [
+    {
+      "test": "Schema with 3 scopes",
+      "success": true,
+      "status_code": 200,
+      "timestamp": "2026-02-27T21:41:36.441738",
+      "error": null,
+      "details": "Found 3 scopes: ['macro', 'guard', 'crossAsset']"
+    },
+    {
+      "test": "Current regime state",
+      "success": true,
+      "status_code": 200,
+      "timestamp": "2026-02-27T21:41:40.357114",
+      "error": null,
+      "details": "Valid regime state for 2026-02-27"
+    },
+    {
+      "test": "Historical state (asOf=2026-02-15)",
+      "success": true,
+      "status_code": 200,
+      "timestamp": "2026-02-27T21:41:44.123362",
+      "error": null,
+      "details": "Valid regime state for 2026-02-15"
+    },
+    {
+      "test": "Timeline with summary",
+      "success": false,
+      "status_code": 0,
+      "timestamp": "2026-02-27T21:42:14.212370",
+      "error": "Request timeout (30s)",
+      "details": null
+    },
+    {
+      "test": "Determinism Test",
+      "success": true,
+      "status_code": 200,
+      "timestamp": "2026-02-27T21:42:20.188948",
+      "error": null,
+      "details": "Same inputsHash for asOf=2026-02-15: 1786bb28e1d42b75"
+    },
+    {
+      "test": "NoLookahead Test",
+      "success": true,
+      "status_code": 200,
+      "timestamp": "2026-02-27T21:42:20.189550",
+      "error": null,
+      "details": "Historical daysInState <= current daysInState for same regimes"
+    },
+    {
+      "test": "Stability formula validation",
+      "success": true,
+      "status_code": 200,
+      "timestamp": "2026-02-27T21:42:24.258751",
+      "error": null,
+      "details": "Stability formula validation passed"
+    },
+    {
+      "test": "Multiple Calls Consistency",
+      "success": true,
+      "status_code": 200,
+      "timestamp": "2026-02-27T21:42:36.721493",
+      "error": null,
+      "details": "All 3 calls returned same inputsHash: 1786bb28e1d42b75"
+    }
+  ]
+}
