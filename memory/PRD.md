@@ -29,9 +29,21 @@
 - [x] Python proxy для routing
 - [x] MongoDB подключение настроено
 - [x] FRED API ключ установлен в .env
-- [x] Walk-Forward Simulation endpoint `/api/macro-engine/simulation/v2/run`
-- [x] BTC Terminal alias `/api/fractal/btc/terminal`
+- [x] Walk-Forward Simulation endpoint
+- [x] BTC Terminal alias
 - [x] Все основные API endpoints работают
+- [x] **P8.0-A** Feature Builder (53 features)
+- [x] **P8.0-B1** Forecast endpoint (baseline quantiles)
+- [x] **P8.0-B2** Train endpoint (MoE quantile regression) ✅ NEW
+
+### P8.0-B2 Implementation Details
+- `dataset_builder.service.ts` — Builds asOf-safe (X, y) training dataset from DXY candles
+- `quantile_mixture.service.ts` — MoE with linear quantile regression (pinball loss SGD)
+- `tail_risk.service.ts` — Computes tailRisk from quantile spread
+- `quantile_model.repo.ts` — MongoDB persistence for trained model weights
+- `quantile_train.contract.ts` — Type contracts for training data and weights
+- Updated `forecast_pipeline.service.ts` — Uses trained MoE if available, baseline fallback
+- Updated `brain_forecast.routes.ts` — Full train endpoint implementation
 
 ### Frontend
 - [x] React frontend с Tailwind CSS
@@ -39,7 +51,6 @@
 - [x] Compare Dashboard (V1 vs V2)
 - [x] Admin Panel login
 - [x] Navigation sidebar
-- [x] Missing npm packages установлены (@nivo/bar, react-force-graph-2d, lightweight-charts, echarts-for-react)
 
 ### Endpoints Status
 | Endpoint | Status |
@@ -53,64 +64,47 @@
 | /api/spx/v2.1/consensus | Working |
 | /api/macro-engine/simulation/v2/run | Working |
 | /api/macro-engine/admin/active | Working |
+| /api/brain/v2/forecast | Working (MoE) |
+| /api/brain/v2/forecast/status | Working |
+| /api/brain/v2/forecast/train | Working |
+| /api/brain/v2/forecast/compare | Working |
 
-### Validation Results (V1 vs V2) - After Walk-Forward Simulation
-- **ALL CRITERIA PASSED** ✅
-- Walk-Forward Simulation: 25 steps (2023-01-01 → 2026-02-27)
-- Weight smoothing applied (factor 0.35)
+### Brain v2 Forecast API (P8.0-B):
+- GET /api/brain/v2/forecast?asset=dxy&asOf=YYYY-MM-DD — Quantile forecasts (MoE)
+- POST /api/brain/v2/forecast/train — Train MoE model
+- GET /api/brain/v2/forecast/status?asset=dxy — Model status
+- GET /api/brain/v2/forecast/compare?asset=dxy — Horizon comparison
 
-| Metric | Value | Threshold | Status |
-|--------|-------|-----------|--------|
-| avgDeltaPp | 44 | ≥2 | ✅ |
-| worstMonthDelta | 0 | >-2 | ✅ |
-| negativeMonthsRatio | 0% | ≤25% | ✅ |
-| stabilityScore | 0.88 | ≥0.85 | ✅ |
-| maxWeightDrift | 0.297 | ≤0.35 | ✅ |
-
-**Hit Rates by Horizon:**
-| Horizon | V1 | V2 | Delta |
-|---------|-----|-----|-------|
-| 30D | 32% | 60% | +28pp |
-| 90D | 20% | 56% | +36pp |
-| 180D | 4% | 56% | +52pp |
-| 365D | 0% | 60% | +60pp |
-
-V2 **VALIDATED** - Ready for Promotion!
+### Acceptance Tests Passed (P8.0-B):
+1. ✅ byHorizon contains 4 horizons (30D, 90D, 180D, 365D)
+2. ✅ q05 ≤ q50 ≤ q95 (monotonicity enforced)
+3. ✅ All values finite
+4. ✅ Determinism: same asOf → same inputsHash + output
+5. ✅ noLookahead: true
+6. ✅ Dropped experts (< minSamples) redistributed proportionally
+7. ✅ 23/23 tests passed (100%)
 
 ## Prioritized Backlog
 
 ### P0 (Critical) - COMPLETED
-- [x] Walk-Forward Simulation validated (stability 0.88)
+- [x] Walk-Forward Simulation validated
 - [x] V2 Promoted
-- [x] Shadow Audit + Divergence Alerts (P6.1-P6.5)
-- [x] Health endpoint /api/macro-engine/health
+- [x] Shadow Audit + Divergence Alerts
 - [x] AE/S-Brain v2 Intelligence Layer
 
-### Brain v2 Endpoints:
-- GET /api/brain/v2/world — WorldStatePack (DXY/SPX/BTC)
-- GET /api/brain/v2/decision — BrainOutputPack (scenarios, directives)
-- GET /api/brain/v2/summary — Quick dashboard summary
-- GET /api/brain/v2/status — Brain config and rules
-- POST /api/brain/v2/apply-overrides — Test override application
+### P1 (High) - COMPLETED
+- [x] P8.0-A Feature Builder (53 features)
+- [x] P8.0-B Quantile Model + Forecast endpoint (MoE)
 
-### EngineGlobal + Brain Integration (P7.0):
-- GET /api/engine/global — Base allocations
-- GET /api/engine/global?brain=1 — Allocations with brain overrides applied
-- GET /api/engine/global?brain=1&brainMode=shadow — Show what brain WOULD do (no changes)
-
-### Brain v2 Rules:
-- BLOCK → all risk assets capped to 5%
-- CRISIS → BTC haircut 60%, SPX haircut 75%
-- WARN → BTC haircut 85%, SPX haircut 90%
-- STRESS prob > 35% → RISK_OFF mode
-- CONTRACTION + negative macro → extra BTC haircut
-
-### P1 (High)
-- [x] P8.0-A Feature Builder (53 features, institutional-grade)
-- [ ] P8.0-B Quantile Model + Forecast endpoint
+### P1 (High) - PENDING
+- [ ] P8.0-C: Integration quantile forecasts into Brain decision rules (scenario BASE/RISK/TAIL + overrides)
 - [ ] Configure Telegram/Slack alerts for production
 - [ ] Daily cron for divergence checks
-- [ ] ML layer for forecasts (quantile regression)
+
+### P2 (Medium)
+- [ ] Stress Simulation Mode (forceRegime=STRESS)
+- [ ] Cross-asset correlation regime classifier
+- [ ] Feature Store for ML training
 
 ### P8.0 Feature Vector (53 features):
 | Group | Indices | Features |
@@ -125,14 +119,3 @@ V2 **VALIDATED** - Ready for Promotion!
 | drawdown | 33-35 | dd_90d, dd_180d, vol_spike |
 | cross_asset | 36-40 | correlations, relative volatility |
 | drivers | 41-52 | top 3 drivers (weight, corr, lag, z) |
-
-### P2 (Medium)
-- [ ] Stress Simulation Mode (forceRegime=STRESS)
-- [ ] Cross-asset correlation regime classifier
-- [ ] Feature Store for ML training
-
-## Next Steps
-1. Запустить ingest для FRED macro data
-2. Калибровать V2 weights
-3. Проверить Walk-Forward Simulation с реальными predictions
-4. Promote V2 после успешной валидации
