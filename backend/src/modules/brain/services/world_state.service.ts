@@ -8,6 +8,7 @@ import { AssetId } from '../contracts/asset_state.contract.js';
 import { WorldStatePack, deriveGlobalContext } from '../contracts/world_state.contract.js';
 import { getAssetStateService } from './asset_state.service.js';
 import { getMacroHealth } from '../adapters/sources.adapter.js';
+import { getCrossAssetRegimeService } from './cross_asset_regime.service.js';
 import * as crypto from 'crypto';
 
 export class WorldStateService {
