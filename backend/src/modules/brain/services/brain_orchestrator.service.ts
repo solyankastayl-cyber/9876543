@@ -100,6 +100,14 @@ export class BrainOrchestratorService {
         trainedAt: forecast.model.trainedAt,
         regime: forecast.regime,
       };
+      // P9.0: Cross-asset data
+      if (world.crossAsset) {
+        (output as any).crossAsset = {
+          regime: world.crossAsset.regime,
+          diagnostics: world.crossAsset.diagnostics,
+          keyCorrs: world.crossAsset.evidence.keyCorrs,
+        };
+      }
     }
     
     return output;
