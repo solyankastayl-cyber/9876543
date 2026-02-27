@@ -422,6 +422,3 @@ export function getBrainOrchestratorService(): BrainOrchestratorService {
   }
   return instance;
 }
-
-// Re-export for convenience
-export { BrainOrchestratorService };
