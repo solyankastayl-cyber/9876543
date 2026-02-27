@@ -11,7 +11,6 @@ import {
   calculateMetaRisk,
 } from '../contracts/meta_risk.contract.js';
 import { getRegimeMemoryService } from './regime_memory.service.js';
-import { getBrainOrchestratorService } from './brain_orchestrator.service.js';
 
 export class MetaRiskService {
 
