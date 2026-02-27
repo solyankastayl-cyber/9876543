@@ -52,6 +52,7 @@ export class WorldStateService {
       asOf,
       assets,
       global,
+      crossAsset: crossAsset || undefined,
       meta: {
         generatedAt: new Date().toISOString(),
         engineVersion: 'brain-v2',
