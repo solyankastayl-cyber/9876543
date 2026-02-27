@@ -17,29 +17,16 @@ export class MetaRiskService {
 
   /**
    * Get MetaRiskPack for given asOf date
+   * Note: Does NOT call Brain to avoid circular dependency.
+   * Brain scenario is passed in externally when needed.
    */
-  async getMetaRisk(asOf?: string): Promise<MetaRiskPack> {
+  async getMetaRisk(asOf?: string, brainScenario?: MetaRiskInputs['brainScenario']): Promise<MetaRiskPack> {
     const targetDate = asOf || new Date().toISOString().split('T')[0];
     
     // 1. Get regime memory state
     const regimeMemory = await getRegimeMemoryService().getCurrent(targetDate);
     
-    // 2. Get brain scenario (optional, may fail)
-    let brainScenario: MetaRiskInputs['brainScenario'] | undefined;
-    try {
-      const brainService = getBrainOrchestratorService();
-      const brainDecision = await brainService.getDecision(targetDate);
-      if (brainDecision?.scenario) {
-        brainScenario = {
-          scenario: brainDecision.scenario.name,
-          pTail: brainDecision.scenario.probabilities?.pTail || 0,
-          pRisk: brainDecision.scenario.probabilities?.pRisk || 0,
-          tailRisk: brainDecision.worldState?.assets?.dxy?.guard?.tailRisk,
-        };
-      }
-    } catch (e) {
-      console.warn('[MetaRisk] Brain scenario unavailable:', (e as Error).message);
-    }
+    // 2. Brain scenario is now passed in (no circular call)
     
     // 3. Build inputs
     const inputs: MetaRiskInputs = {
