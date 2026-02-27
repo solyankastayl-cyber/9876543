@@ -1,0 +1,52 @@
+{
+  "summary": "P10.1 Regime Memory State backend testing completed. Core functionality working correctly with 7/8 tests passing. All critical features validated: schema with 3 scopes, current state, historical state, determinism, no-lookahead property, and stability formula calculations.",
+
+  "backend_issues": {
+    "critical_bugs": [],
+    "flaky_endpoints": [
+      {
+        "endpoint": "/api/brain/v2/regime-memory/timeline",
+        "issue": "Timeline endpoint has performance issues with longer date ranges (>30 days), causing timeouts (30-90s) or intermittent 502 errors",
+        "impact": "Timeline queries for periods longer than ~30 days may fail or timeout",
+        "fix_priority": "MEDIUM",
+        "working_scenario": "Works correctly for shorter date ranges (≤14 days) and returns proper JSON structure"
+      }
+    ]
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": []
+  },
+
+  "passed_tests": [
+    "Schema endpoint returns 3 scopes (macro: 7 values, guard: 4 values, crossAsset: 5 values)",
+    "Current regime state endpoint working correctly - returns macro/guard/crossAsset states",
+    "Historical state retrieval with asOf parameter working correctly", 
+    "Determinism test PASSED: same asOf=2026-02-15 produces same inputsHash (1786bb28e1d42b75)",
+    "NoLookahead test PASSED: historical daysInState (45d) ≤ current daysInState (57d) for all scopes",
+    "Stability formula validation PASSED: 0.5*(57/90) + 0.5*(1-0/10) = 0.817 for all scopes",
+    "Multiple calls consistency PASSED: repeated calls return identical inputsHash",
+    "Flip counting correctly calculated: flips30d = 0 for stable regime period",
+    "Contract validation: all required fields present (scope, current, since, daysInState, flips30d, stability)",
+    "Meta fields validation: generatedAt timestamp and inputsHash present for determinism"
+  ],
+
+  "test_report_links": [
+    "/app/regime_memory_test.py",
+    "/app/regime_memory_final_test.py",
+    "/app/test_reports/regime_memory_test_20260227_214236.json"
+  ],
+
+  "success_percentage": "Backend: 87.5% (7/8 P10.1 tests passed, timeline endpoint performance bottleneck)",
+
+  "action_item_for_main_agent": "Optimize timeline endpoint performance for longer date ranges. Consider: 1) Implement pagination for large date ranges, 2) Add caching layer for computed regime states, 3) Optimize database queries in RegimeMemoryService.getTimeline(), 4) Consider async processing for heavy timeline computations spanning >30 days.",
+
+  "updated_files": [
+    "/app/regime_memory_test.py",
+    "/app/regime_memory_final_test.py"
+  ],
+
+  "should_call_test_agent_after_fix": "false",
+  "should_main_agent_test_itself": "true"
+}
