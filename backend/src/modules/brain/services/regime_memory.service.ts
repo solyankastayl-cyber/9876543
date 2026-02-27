@@ -279,6 +279,9 @@ export class RegimeMemoryService {
     await RegimeHistoryModel.deleteMany({
       date: { $gte: new Date(start), $lte: new Date(end) }
     });
+    
+    // Clear memory state to rebuild from scratch
+    await RegimeMemoryModel.deleteMany({});
 
     const dates = this.generateDates(start, end, stepDays);
     let processed = 0;
