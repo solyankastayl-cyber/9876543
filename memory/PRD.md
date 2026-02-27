@@ -140,3 +140,41 @@ WorldState + CrossAsset → Quantile Forecast (MoE) → Scenario Engine → Risk
 
 ---
 Last Updated: 2026-02-27
+
+## P10.1 — Regime Memory State (IMPLEMENTED 2026-02-27)
+
+### Architecture
+```
+WorldState → extractMacro/Guard/CrossAsset → updateScope → MongoDB
+                                                            ↓
+                                              regime_memory_state (current)
+                                              regime_history (daily records)
+```
+
+### Contracts
+- `RegimeMemoryState`: scope, current, since, daysInState, flips30d, stability
+- `RegimeMemoryPack`: macro + guard + crossAsset states
+- `RegimeTimelinePack`: points[] + summary
+
+### API Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| /api/brain/v2/regime-memory/schema | GET | Schema docs |
+| /api/brain/v2/regime-memory/current | GET | Current state |
+| /api/brain/v2/regime-memory/timeline | GET | Historical |
+| /api/brain/v2/regime-memory/recompute | POST | Admin rebuild |
+
+### Test Results
+- **Determinism**: ✅ PASS (same asOf → same hash)
+- **NoLookahead**: ✅ PASS (historical days < current)
+- **Flip counting**: ✅ PASS (correct 30d window)
+- **Stability formula**: ✅ PASS (0.5*(days/90) + 0.5*(1-flips/10))
+
+### Current State (2026-02-27)
+| Scope | Current | Days | Stability |
+|-------|---------|------|-----------|
+| macro | NEUTRAL | 57 | 0.817 |
+| guard | NONE | 57 | 0.817 |
+| crossAsset | RISK_ON_SYNC | 57 | 0.817 |
+
+### Next: P10.2 — MetaRisk Scale
