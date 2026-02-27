@@ -1,0 +1,111 @@
+{
+  "summary": "V2 Macro Engine upgrade tested successfully. Backend: 18/18 tests passed (100%). Features verified: Real XAUUSD gold data (5200+ points), V2 auto-activation (confidence 0.80 >= 0.6), admin lifecycle (promote/rollback/reset), calibration sanity checks (pass=true, sumWeights~1.0, maxWeight<0.35, GOLD in topWeights), router response with proper router field (mode=auto, chosen=v2, reason=AUTO_V2_READY). Frontend: All components verified - V2 badge, CALIBRATED badge, Vol x0.929 badge, GOLD driver visible in Top Drivers.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "GET /api/macro-engine/admin/reset",
+        "issue": "404 Not Found - only POST method works, GET method returns route not found despite code showing GET route registered",
+        "priority": "LOW"
+      }
+    ]
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "/dxy page",
+        "issues": ["WebSocket connection errors in console (non-blocking) - expected for preview env"]
+      }
+    ]
+  },
+
+  "passed_tests": [
+    "GET /api/macro-engine/status — activeEngine=v2, activeReason=AUTO_V2_READY (after reset to auto)",
+    "GET /api/macro-engine/DXY/pack — engineVersion=v2 with router.mode=auto, router.chosen=v2",
+    "GET /api/macro-engine/v2/health — ok=true, issues=[], gold data sufficient",
+    "GET /api/macro-engine/v2/DXY/pack — GOLD driver with displayName 'Gold (XAUUSD)', weight > 0",
+    "GET /api/macro-engine/v2/DXY/pack — meta.stateInfo has volScale (0.929) and weightsSource=calibrated",
+    "GET /api/macro-engine/v2/DXY/pack — regime.confidence=0.80 (not old 0.48)",
+    "GET /api/macro-engine/admin/active — active=v2, mode=auto",
+    "POST /api/macro-engine/admin/rollback {asset:DXY,to:v1,reason:test} — succeeded",
+    "GET /api/macro-engine/DXY/pack after rollback — engineVersion=v1",
+    "POST /api/macro-engine/admin/promote {asset:DXY,from:v1,to:v2,reason:test} — succeeded",
+    "GET /api/macro-engine/DXY/pack after promote — engineVersion=v2",
+    "POST /api/macro-engine/admin/reset — succeeded, reset to auto mode",
+    "GET /api/macro-engine/DXY/pack after reset — router.mode=auto, router.chosen=v2",
+    "POST /api/macro-engine/v2/calibration/run {symbol:DXY} — sanity.pass=true, sumWeights=0.9998, maxWeight=0.2287, GOLD in topWeights",
+    "GET /api/macro-engine/DXY/compare — V2 has GOLD driver, V1 does not",
+    "GET /api/macro-engine/v2/state/current — state.confidence >= 0.6 (0.80)",
+    "Frontend: /dxy page — V2 badge visible",
+    "Frontend: /dxy page — CALIBRATED badge visible",
+    "Frontend: /dxy page — Vol x0.929 badge visible",
+    "Frontend: /dxy page — Regime State card: NEUTRAL, 80% confidence, 50% persistence, 0.99 entropy",
+    "Frontend: /dxy page — Guard Level card: SOFT, GOLD_FLIGHT_TO_QUALITY, GOLD_ELEVATED",
+    "Frontend: /dxy page — GOLD driver visible in Top Drivers (-5.7%, w:9)"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_macro_engine_v2_upgrade.py",
+    "/app/test_reports/pytest/pytest_results_v2_upgrade.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "Gold adapter correctly loads 5200+ XAUUSD daily prices from /app/data/gold_stooq.csv",
+    "V2 engine correctly computes its own confidence (0.80) instead of inheriting V1's string-based confidence (was 0.48)",
+    "Router auto-switches to V2 when confidence >= 0.6 (v2MinConfidence)",
+    "Admin promote/rollback/reset endpoints work correctly for engine lifecycle management",
+    "Calibration sanity checks properly validate: sumWeights~1.0, maxWeight<0.35, coverage>=0.8",
+    "Router response includes proper router field with mode/chosen/reason for transparency"
+  ],
+
+  "updated_files": [
+    "/app/backend/tests/test_macro_engine_v2_upgrade.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (18/18 tests passed)",
+    "frontend": "100% (all components verified)"
+  },
+
+  "seed_data_creation": "No seed data needed - uses real XAUUSD/DXY CSV data and MongoDB state",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "V2 Macro Engine major upgrade fully tested. Key changes: (1) Gold adapter now uses real XAUUSD daily data from stooq CSV (5200+ points), (2) V2 computes its own confidence (0.80) so router auto-switches to V2, (3) Admin promote/rollback/reset endpoints work for engine lifecycle, (4) Calibration includes GOLD with sanity checks passing. Previous iterations 4-5 tested state/calibration basics - this iteration tested the production-ready V2 upgrade with real gold data.",
+
+  "verified_features": {
+    "gold_adapter": {
+      "source": "Stooq XAUUSD daily CSV",
+      "data_points": "5200+",
+      "file_path": "/app/data/gold_stooq.csv"
+    },
+    "v2_confidence": {
+      "value": 0.80,
+      "threshold": 0.6,
+      "auto_switch": true
+    },
+    "admin_endpoints": {
+      "promote": "POST /api/macro-engine/admin/promote",
+      "rollback": "POST /api/macro-engine/admin/rollback",
+      "reset": "POST /api/macro-engine/admin/reset",
+      "active": "GET/POST /api/macro-engine/admin/active"
+    },
+    "calibration_sanity": {
+      "sumWeights": 0.9998,
+      "maxWeight": 0.2287,
+      "coverage": 1.0,
+      "pass": true
+    },
+    "router_field": {
+      "mode": "auto",
+      "chosen": "v2",
+      "reason": "AUTO_V2_READY"
+    }
+  }
+}

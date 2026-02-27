@@ -1,0 +1,92 @@
+{
+  "summary": "Complete testing of Compare Dashboard + Backtest Framework for institutional V1 vs V2 macro-engine validation. Backend: 10/10 APIs working (100% success). Frontend: 4/4 pages loading correctly with all UI components functional.",
+
+  "backend_issues": {
+    "critical_bugs": [],
+    "minor_issues": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "All pages",
+        "issues": ["Network timeout warnings due to data loading (non-blocking) - expected for complex financial calculations"]
+      }
+    ]
+  },
+
+  "passed_tests": [
+    "GET /api/health — ok=true, backend connectivity confirmed",
+    "GET /api/macro-engine/status — activeEngine=v2, macro-engine operational",
+    "GET /api/macro-engine/DXY/compare-full — V1 vs V2 comparison with horizons, regime/router/calibration stats",
+    "GET /api/macro-engine/DXY/promotion/recommendation — promotion status evaluation with criteria",
+    "GET /api/macro-engine/v2/regime/timeline?asset=DXY — regime timeline with periods data",
+    "GET /api/macro-engine/v2/calibration/drift?asset=DXY — calibration drift tracking across versions",
+    "GET /api/macro-engine/v2/calibration/status?asset=DXY — calibration health and recalibration status",
+    "GET /api/fractal/dxy/terminal — DXY fractal terminal data",
+    "GET /api/fractal/spx/terminal — SPX fractal terminal data",
+    "POST /api/macro-engine/DXY/backtest/run — backtest framework with V1 vs V2 performance metrics",
+    "Frontend /engine/compare — Compare Dashboard with all sections: Promotion Readiness, Divergence Panel, Regime Timeline, Calibration Drift, Router Stability",
+    "Frontend /fractal/dxy — DXY Fractal page with chart, BUY signal, macro layer V2 CALIBRATED, regime EASING",
+    "Frontend /spx — SPX Terminal with research canvas, historical matches, consensus 100%",
+    "Frontend /admin — Admin Panel with login form and security notices"
+  ],
+
+  "test_report_links": [
+    "/app/backend_test.py",
+    "/app/test_reports/backend_test_results_20260227_112041.json"
+  ],
+
+  "action_items": [],
+
+  "updated_files": [
+    "/app/backend_test.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (10/10 API endpoints working)",
+    "frontend": "100% (4/4 pages loading with functional UI components)"
+  },
+
+  "verified_features": {
+    "compare_dashboard": {
+      "promotion_readiness": "HOLD status with criteria tracking",
+      "divergence_overview": "V1 vs V2 deltas across 30D/90D/180D/365D horizons",
+      "regime_timeline": "EASING regime visualization",
+      "calibration_drift": "Weight version tracking",
+      "router_stability": "Fallback monitoring",
+      "asset_selector": "DXY/SPX/BTC dropdown functional",
+      "run_backtest_button": "Clickable and integrated"
+    },
+    "backtest_framework": {
+      "v1_vs_v2_comparison": "Hit rate, RMSE, directional accuracy",
+      "regime_stability_scoring": "Consistency metrics",
+      "sharpe_like_ratios": "Risk-adjusted performance",
+      "promotion_recommendation": "PROMOTE_V2/KEEP_V1/V2_NEEDS_WORK logic"
+    },
+    "dxy_fractal": {
+      "chart_display": "Real-time DXY price action with BUY signal",
+      "macro_integration": "V2 CALIBRATED badge visible",
+      "regime_display": "EASING state with 75% confidence",
+      "top_drivers": "GOLD showing -5.7% impact"
+    },
+    "spx_terminal": {
+      "research_canvas": "Historical pattern matching",
+      "consensus_tracking": "100% consensus display",
+      "action_mode": "HOLD with NO TRADE status",
+      "sideways_range": "50% range detection"
+    },
+    "admin_panel": {
+      "authentication_form": "Username/password login",
+      "security_notices": "Access restriction warnings",
+      "clean_ui": "Professional admin interface"
+    }
+  },
+
+  "institutional_validation_ready": true,
+  
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_test_itself": false
+}

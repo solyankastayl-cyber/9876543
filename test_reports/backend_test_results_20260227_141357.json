@@ -1,0 +1,4979 @@
+{
+  "timestamp": "2026-02-27T14:13:57.895073",
+  "summary": {
+    "total_tests": 16,
+    "passed_tests": 14,
+    "failed_tests": 2,
+    "success_rate": "87.5%",
+    "passed_test_names": [
+      "GET /api/health",
+      "GET /api/macro-engine/status",
+      "GET /api/macro-engine/admin/active",
+      "POST /api/macro-engine/admin/active (activate V2)",
+      "GET /api/macro-engine/dxy/pack",
+      "GET /api/spx/v2.1/consensus",
+      "GET /api/macro-engine/DXY/compare-full",
+      "GET /api/macro-engine/DXY/promotion/recommendation",
+      "GET /api/macro-engine/v2/regime/timeline?asset=DXY",
+      "GET /api/macro-engine/v2/calibration/drift?asset=DXY",
+      "GET /api/macro-engine/v2/calibration/status?asset=DXY",
+      "GET /api/fractal/dxy/terminal",
+      "GET /api/fractal/spx/terminal",
+      "POST /api/macro-engine/DXY/backtest/run"
+    ],
+    "failed_test_details": [
+      {
+        "test": "GET /api/fractal/btc/terminal",
+        "passed": false,
+        "details": {
+          "status_code": 404
+        }
+      },
+      {
+        "test": "GET /api/macro-engine/simulation/v2/run",
+        "passed": false,
+        "details": {
+          "status_code": 500
+        }
+      }
+    ]
+  },
+  "detailed_results": [
+    {
+      "test": "GET /api/health",
+      "passed": true,
+      "details": {
+        "status_code": 200,
+        "response": {
+          "status": "ok",
+          "proxy": "python",
+          "ts_backend": {
+            "ok": true,
+            "mode": "FRACTAL_ONLY",
+            "timestamp": "2026-02-27T14:13:51.315Z"
+          }
+        }
+      }
+    },
+    {
+      "test": "GET /api/macro-engine/status",
+      "passed": true,
+      "details": {
+        "status_code": 200,
+        "response": {
+          "ok": true,
+          "activeEngine": "v2",
+          "activeReason": "ENV_OVERRIDE_V2",
+          "v2Readiness": {
+            "ready": false,
+            "reason": "V2 health issues: No macro components loaded"
+          },
+          "config": {
+            "defaultEngine": "v1",
+            "autoSwitch": true,
+            "v2MinConfidence": 0.6,
+            "v2MinDataPoints": 500
+          },
+          "override": "v2",
+          "envSetting": "auto"
+        },
+        "activeEngine": "v2"
+      }
+    },
+    {
+      "test": "GET /api/macro-engine/admin/active",
+      "passed": true,
+      "details": {
+        "status_code": 200,
+        "response": {
+          "ok": true,
+          "asset": "DXY",
+          "active": "v2",
+          "mode": "v2",
+          "reason": "ENV_OVERRIDE_V2"
+        },
+        "active": "v2",
+        "mode": "v2",
+        "reason": "ENV_OVERRIDE_V2"
+      }
+    },
+    {
+      "test": "POST /api/macro-engine/admin/active (activate V2)",
+      "passed": true,
+      "details": {
+        "status_code": 200,
+        "payload": {
+          "active": "v2"
+        },
+        "response": {
+          "ok": true,
+          "asset": "DXY",
+          "active": "v2",
+          "message": "Engine set to: v2"
+        },
+        "active": "v2",
+        "message": "Engine set to: v2"
+      }
+    },
+    {
+      "test": "GET /api/macro-engine/dxy/pack",
+      "passed": true,
+      "details": {
+        "status_code": 200,
+        "response": {
+          "engineVersion": "v2",
+          "overlay": {
+            "horizons": [
+              {
+                "horizon": "7D",
+                "hybridEndReturn": 0,
+                "macroEndReturn": -0.004,
+                "delta": -0.004
+              },
+              {
+                "horizon": "14D",
+                "hybridEndReturn": 0,
+                "macroEndReturn": -0.0079,
+                "delta": -0.0079
+              },
+              {
+                "horizon": "30D",
+                "hybridEndReturn": 0,
+                "macroEndReturn": -0.011899999999999999,
+                "delta": -0.011899999999999999
+              },
+              {
+                "horizon": "90D",
+                "hybridEndReturn": 0,
+                "macroEndReturn": -0.0199,
+                "delta": -0.0199
+              },
+              {
+                "horizon": "180D",
+                "hybridEndReturn": 0,
+                "macroEndReturn": -0.0278,
+                "delta": -0.0278
+              },
+              {
+                "horizon": "365D",
+                "hybridEndReturn": 0,
+                "macroEndReturn": -0.0397,
+                "delta": -0.0397
+              }
+            ]
+          },
+          "regime": {
+            "dominant": "EASING",
+            "confidence": 0.7500000000000001,
+            "probs": {
+              "EASING": 0.999,
+              "TIGHTENING": 0,
+              "STRESS": 0,
+              "NEUTRAL": 0,
+              "NEUTRAL_MIXED": 0.001
+            },
+            "persistence": 0.75
+          },
+          "drivers": {
+            "scoreSigned": -0.57,
+            "confidenceMultiplier": 0.7500000000000001,
+            "regimeBoost": 1,
+            "components": [
+              {
+                "key": "GOLD",
+                "displayName": "Gold (XAUUSD)",
+                "role": "gold",
+                "weight": 0.05,
+                "lagDays": 90,
+                "valueNow": 1.899,
+                "contribution": -0.057,
+                "tooltip": "Gold $5185.26: Flight-to-quality (z=1.90)"
+              }
+            ]
+          },
+          "guard": {
+            "level": "SOFT",
+            "reasonCodes": [
+              "HIGH_MACRO_PRESSURE",
+              "GOLD_FLIGHT_TO_QUALITY",
+              "GOLD_ELEVATED"
+            ]
+          },
+          "meta": {
+            "asOf": "2026-02-27T14:13:51.914Z",
+            "dataCoverage": {
+              "GOLD": {
+                "points": 5200,
+                "from": "2006-01-03",
+                "to": "2026-02-26",
+                "staleDays": 1
+              }
+            },
+            "processingTimeMs": 13,
+            "stateInfo": {
+              "entropy": 0.011,
+              "changeCount30D": 0,
+              "lastChangeAt": "2026-02-27T14:10:58.420Z",
+              "weightsSource": "calibrated",
+              "volScale": 0.929
+            }
+          },
+          "internals": {
+            "v2": {
+              "transitionMatrix": [
+                [
+                  0.75,
+                  0.1,
+                  0.02,
+                  0.08,
+                  0.05
+                ],
+                [
+                  0.08,
+                  0.72,
+                  0.08,
+                  0.07,
+                  0.05
+                ],
+                [
+                  0.05,
+                  0.15,
+                  0.55,
+                  0.1,
+                  0.15
+                ],
+                [
+                  0.12,
+                  0.12,
+                  0.06,
+                  0.5,
+                  0.2
+                ],
+                [
+                  0.15,
+                  0.15,
+                  0.1,
+                  0.2,
+                  0.4
+                ]
+              ],
+              "stationaryDist": {
+                "EASING": 0.28,
+                "TIGHTENING": 0.305,
+                "STRESS": 0.118,
+                "NEUTRAL": 0.164,
+                "NEUTRAL_MIXED": 0.133
+              },
+              "goldSignal": {
+                "z120": 1.899,
+                "ret30": 0.1233,
+                "ret90": 0.2571,
+                "flightToQuality": true
+              }
+            }
+          },
+          "router": {
+            "mode": "v2",
+            "chosen": "v2",
+            "reason": "ENV_OVERRIDE_V2"
+          },
+          "routerInfo": {
+            "activeEngine": "v2",
+            "reason": "ENV_OVERRIDE_V2"
+          }
+        }
+      }
+    },
+    {
+      "test": "GET /api/fractal/btc/terminal",
+      "passed": false,
+      "details": {
+        "status_code": 404
+      }
+    },
+    {
+      "test": "GET /api/spx/v2.1/consensus",
+      "passed": true,
+      "details": {
+        "status_code": 200,
+        "response": {
+          "ok": true,
+          "data": {
+            "consensusIndex": 100,
+            "direction": "NEUTRAL",
+            "dominance": "STRUCTURE",
+            "structuralLock": false,
+            "conflictLevel": "CRITICAL",
+            "votes": [
+              {
+                "horizon": "7d",
+                "tier": "TIMING",
+                "direction": "BULL",
+                "confidence": 0.33826212319790677,
+                "divergenceGrade": "B",
+                "blockers": [],
+                "weight": 0.1,
+                "voteScore": 0.0338
+              },
+              {
+                "horizon": "14d",
+                "tier": "TIMING",
+                "direction": "BEAR",
+                "confidence": 0.3,
+                "divergenceGrade": "C",
+                "blockers": [
+                  "LOW_RELIABILITY"
+                ],
+                "weight": 0.095,
+                "voteScore": 0
+              },
+              {
+                "horizon": "30d",
+                "tier": "TACTICAL",
+                "direction": "BULL",
+                "confidence": 0.3,
+                "divergenceGrade": "B",
+                "blockers": [
+                  "LOW_RELIABILITY"
+                ],
+                "weight": 0.15,
+                "voteScore": 0
+              },
+              {
+                "horizon": "90d",
+                "tier": "TACTICAL",
+                "direction": "BEAR",
+                "confidence": 0.3,
+                "divergenceGrade": "D",
+                "blockers": [
+                  "HIGH_DIVERGENCE",
+                  "LOW_RELIABILITY"
+                ],
+                "weight": 0.1275,
+                "voteScore": 0
+              },
+              {
+                "horizon": "180d",
+                "tier": "STRUCTURE",
+                "direction": "BULL",
+                "confidence": 0.3,
+                "divergenceGrade": "C",
+                "blockers": [
+                  "LOW_RELIABILITY"
+                ],
+                "weight": 0.2375,
+                "voteScore": 0
+              },
+              {
+                "horizon": "365d",
+                "tier": "STRUCTURE",
+                "direction": "BEAR",
+                "confidence": 0.3,
+                "divergenceGrade": "B",
+                "blockers": [
+                  "LOW_RELIABILITY"
+                ],
+                "weight": 0.25,
+                "voteScore": 0
+              }
+            ],
+            "resolved": {
+              "action": "HOLD",
+              "mode": "NO_TRADE",
+              "sizeMultiplier": 0.3,
+              "reasons": [
+                "HOLD: Weak or neutral consensus",
+                "HOLD forced: Critical tier conflict"
+              ],
+              "penalties": [
+                "CRITICAL conflict: 70% size cut"
+              ]
+            },
+            "phaseType": "SIDEWAYS_RANGE",
+            "phaseFlags": [],
+            "computedAt": "2026-02-27T14:13:54.713Z"
+          },
+          "meta": {
+            "horizonCount": 6,
+            "phaseType": "SIDEWAYS_RANGE",
+            "preset": "BALANCED",
+            "computedAt": "2026-02-27T14:13:54.713Z",
+            "horizonStack": {
+              "source": "REAL_FOCUS_PACK",
+              "buildTimeMs": 2226,
+              "successCount": 6,
+              "failCount": 0,
+              "details": [
+                {
+                  "horizon": "7d",
+                  "tier": "TIMING",
+                  "direction": "BULL",
+                  "confidence": 0.33826212319790677,
+                  "hitRate": 0.5333333333333333,
+                  "medianReturn": 0.09829619921363413,
+                  "sampleSize": 15,
+                  "divergenceGrade": "B",
+                  "blockers": []
+                },
+                {
+                  "horizon": "14d",
+                  "tier": "TIMING",
+                  "direction": "BEAR",
+                  "confidence": 0.3,
+                  "hitRate": 0.3333333333333333,
+                  "medianReturn": -1.158271144278614,
+                  "sampleSize": 12,
+                  "divergenceGrade": "C",
+                  "blockers": [
+                    "LOW_RELIABILITY"
+                  ]
+                },
+                {
+                  "horizon": "30d",
+                  "tier": "TACTICAL",
+                  "direction": "BULL",
+                  "confidence": 0.3,
+                  "hitRate": 0.6,
+                  "medianReturn": 2.412051153688623,
+                  "sampleSize": 10,
+                  "divergenceGrade": "B",
+                  "blockers": [
+                    "LOW_RELIABILITY"
+                  ]
+                },
+                {
+                  "horizon": "90d",
+                  "tier": "TACTICAL",
+                  "direction": "BEAR",
+                  "confidence": 0.3,
+                  "hitRate": 0.42857142857142855,
+                  "medianReturn": -1.0610267899403651,
+                  "sampleSize": 7,
+                  "divergenceGrade": "D",
+                  "blockers": [
+                    "HIGH_DIVERGENCE",
+                    "LOW_RELIABILITY"
+                  ]
+                },
+                {
+                  "horizon": "180d",
+                  "tier": "STRUCTURE",
+                  "direction": "BULL",
+                  "confidence": 0.3,
+                  "hitRate": 0.8,
+                  "medianReturn": 2.5541714644614233,
+                  "sampleSize": 5,
+                  "divergenceGrade": "C",
+                  "blockers": [
+                    "LOW_RELIABILITY"
+                  ]
+                },
+                {
+                  "horizon": "365d",
+                  "tier": "STRUCTURE",
+                  "direction": "BEAR",
+                  "confidence": 0.3,
+                  "hitRate": 0.4,
+                  "medianReturn": -0.014839437288541394,
+                  "sampleSize": 5,
+                  "divergenceGrade": "B",
+                  "blockers": [
+                    "LOW_RELIABILITY"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "has_consensus": false,
+        "has_confidence": false
+      }
+    },
+    {
+      "test": "GET /api/macro-engine/simulation/v2/run",
+      "passed": false,
+      "details": {
+        "status_code": 500
+      }
+    },
+    {
+      "test": "GET /api/macro-engine/DXY/compare-full",
+      "passed": true,
+      "details": {
+        "status_code": 200,
+        "asset": "DXY",
+        "response": {
+          "ok": true,
+          "data": {
+            "asset": "DXY",
+            "range": {
+              "from": "2025-11-29",
+              "to": "2026-02-27",
+              "totalObservations": 7
+            },
+            "v2VersionId": null,
+            "perHorizon": false,
+            "horizons": {
+              "30D": {
+                "v1MeanReturn": 0,
+                "v2MeanReturn": -0.0119,
+                "v1HitRate": 0,
+                "v2HitRate": 0,
+                "meanAbsDiff": 0.0119,
+                "meanSignedDiff": -0.0119,
+                "directionAgreement": 0,
+                "v2OutperformanceRate": 0,
+                "delta": -0.0119
+              },
+              "90D": {
+                "v1MeanReturn": 0,
+                "v2MeanReturn": -0.0199,
+                "v1HitRate": 0,
+                "v2HitRate": 0,
+                "meanAbsDiff": 0.0199,
+                "meanSignedDiff": -0.0199,
+                "directionAgreement": 0,
+                "v2OutperformanceRate": 0,
+                "delta": -0.0199
+              },
+              "180D": {
+                "v1MeanReturn": 0,
+                "v2MeanReturn": -0.0278,
+                "v1HitRate": 0,
+                "v2HitRate": 0,
+                "meanAbsDiff": 0.0278,
+                "meanSignedDiff": -0.0278,
+                "directionAgreement": 0,
+                "v2OutperformanceRate": 0,
+                "delta": -0.0278
+              },
+              "365D": {
+                "v1MeanReturn": 0,
+                "v2MeanReturn": -0.0397,
+                "v1HitRate": 0,
+                "v2HitRate": 0,
+                "meanAbsDiff": 0.0397,
+                "meanSignedDiff": -0.0397,
+                "directionAgreement": 0,
+                "v2OutperformanceRate": 0,
+                "delta": -0.0397
+              }
+            },
+            "regimeStats": {
+              "totalRegimeChanges": 0,
+              "avgPersistence": 0.75,
+              "mostFrequentRegime": "EASING",
+              "regimeDistribution": {
+                "EASING": 100
+              }
+            },
+            "routerStats": {
+              "fallbackCount": 0,
+              "v1ChosenCount": 0,
+              "v2ChosenCount": 0,
+              "fallbackReasons": {}
+            },
+            "calibrationStats": {
+              "totalVersions": 0,
+              "avgWeightDrift": 0,
+              "maxWeightDrift": 0,
+              "lastCalibrationDate": null,
+              "nextScheduledDate": null,
+              "activeVersionId": null,
+              "perHorizon": false
+            }
+          }
+        },
+        "horizons": [
+          "30D",
+          "90D",
+          "180D",
+          "365D"
+        ],
+        "has_regime_stats": true,
+        "has_router_stats": true,
+        "has_calibration_stats": true
+      }
+    },
+    {
+      "test": "GET /api/macro-engine/DXY/promotion/recommendation",
+      "passed": true,
+      "details": {
+        "status_code": 200,
+        "asset": "DXY",
+        "response": {
+          "ok": true,
+          "data": {
+            "asset": "DXY",
+            "status": "V2_UNDERPERFORMING",
+            "versionId": null,
+            "perHorizon": false,
+            "criteria": {
+              "hitRateDiff": {
+                "required": 2,
+                "actual": null,
+                "passed": false,
+                "perHorizon": [
+                  {
+                    "horizon": "30D",
+                    "v1HitRate": 0,
+                    "v2HitRate": 0,
+                    "delta": 0,
+                    "passed": true
+                  },
+                  {
+                    "horizon": "90D",
+                    "v1HitRate": 0,
+                    "v2HitRate": 0,
+                    "delta": 0,
+                    "passed": true
+                  },
+                  {
+                    "horizon": "180D",
+                    "v1HitRate": 0,
+                    "v2HitRate": 0,
+                    "delta": 0,
+                    "passed": true
+                  },
+                  {
+                    "horizon": "365D",
+                    "v1HitRate": 0,
+                    "v2HitRate": 0,
+                    "delta": 0,
+                    "passed": true
+                  }
+                ]
+              },
+              "noDegradation": {
+                "maxAllowed": -1,
+                "actual": null,
+                "passed": true
+              },
+              "regimeStability": {
+                "required": 0.7,
+                "actual": 1,
+                "passed": true
+              },
+              "fallbackCount": {
+                "required": 0,
+                "actual": 0,
+                "passed": true
+              },
+              "calibrationDrift": {
+                "maxAllowed": 0.5,
+                "actual": 0,
+                "passed": true
+              },
+              "dataFreshness": {
+                "maxStaleDays": 7,
+                "actualStaleDays": 999,
+                "passed": false
+              }
+            },
+            "reasons": [
+              "Best delta: +-Infinity% (need +2%)"
+            ],
+            "metricsSnapshot": {
+              "v1HitRate": 0,
+              "v2HitRate": 0,
+              "v2OutperformanceRate": 0,
+              "fallbackCount": 0,
+              "regimeStability": 1,
+              "weightDrift": 0,
+              "lastCalibration": null,
+              "perHorizonMetrics": {
+                "30D": {
+                  "v1": 0,
+                  "v2": 0,
+                  "delta": 0
+                },
+                "90D": {
+                  "v1": 0,
+                  "v2": 0,
+                  "delta": 0
+                },
+                "180D": {
+                  "v1": 0,
+                  "v2": 0,
+                  "delta": 0
+                },
+                "365D": {
+                  "v1": 0,
+                  "v2": 0,
+                  "delta": 0
+                }
+              }
+            },
+            "recommendation": "V2 needs to beat V1 by at least +2% on any horizon.",
+            "evaluatedAt": "2026-02-27T14:13:55.223Z"
+          }
+        },
+        "status": "V2_UNDERPERFORMING",
+        "has_criteria": true,
+        "has_recommendation": true
+      }
+    },
+    {
+      "test": "GET /api/macro-engine/v2/regime/timeline?asset=DXY",
+      "passed": true,
+      "details": {
+        "status_code": 200,
+        "asset": "DXY",
+        "response": {
+          "ok": true,
+          "data": {
+            "asset": "DXY",
+            "totalStates": 11,
+            "periods": [
+              {
+                "regime": "EASING",
+                "start": "2026-02-27T14:10:58.420Z",
+                "end": "2026-02-27T14:13:55.462Z",
+                "persistence": 0.75
+              }
+            ]
+          }
+        },
+        "total_states": 11,
+        "periods_count": 1
+      }
+    },
+    {
+      "test": "GET /api/macro-engine/v2/calibration/drift?asset=DXY",
+      "passed": true,
+      "details": {
+        "status_code": 200,
+        "asset": "DXY",
+        "response": {
+          "ok": true,
+          "data": {
+            "asset": "DXY",
+            "totalVersions": 0,
+            "versions": []
+          }
+        },
+        "total_versions": 0,
+        "versions_count": 0
+      }
+    },
+    {
+      "test": "GET /api/macro-engine/v2/calibration/status?asset=DXY",
+      "passed": true,
+      "details": {
+        "status_code": 200,
+        "asset": "DXY",
+        "response": {
+          "ok": true,
+          "data": {
+            "asset": "DXY",
+            "lastRun": null,
+            "nextScheduled": null,
+            "activeVersion": null,
+            "needsRecalibration": true,
+            "health": "NEEDS_UPDATE",
+            "qualityScore": 0,
+            "aggregateCorr": 0
+          }
+        },
+        "health": "NEEDS_UPDATE",
+        "needs_recalibration": true,
+        "active_version": null
+      }
+    },
+    {
+      "test": "GET /api/fractal/dxy/terminal",
+      "passed": true,
+      "details": {
+        "status_code": 200,
+        "response": {
+          "ok": true,
+          "asset": "DXY",
+          "focus": "30d",
+          "ts": "2026-02-27T14:13:56.356Z",
+          "processingTimeMs": 454,
+          "meta": {
+            "mode": "tactical",
+            "tradingEnabled": true,
+            "configUsed": {
+              "focus": "30d",
+              "windowLen": 180,
+              "threshold": 0.01,
+              "weightMode": "W2",
+              "topK": 10
+            },
+            "warnings": [],
+            "macroOverlayEnabled": true
+          },
+          "core": {
+            "current": {
+              "price": 117.9917,
+              "date": "2026-02-20"
+            },
+            "matches": [
+              {
+                "rank": 1,
+                "matchId": "1977-04-01_1977-12-27",
+                "startDate": "1977-04-01",
+                "endDate": "1977-12-27",
+                "similarity": 0.9027,
+                "decade": "1970s"
+              },
+              {
+                "rank": 2,
+                "matchId": "1977-12-23_1977-12-23",
+                "startDate": "1977-12-23",
+                "endDate": "1977-12-23",
+                "similarity": 0.9024,
+                "decade": "1970s"
+              },
+              {
+                "rank": 3,
+                "matchId": "1977-12-28_1977-12-28",
+                "startDate": "1977-12-28",
+                "endDate": "1977-12-28",
+                "similarity": 0.9012,
+                "decade": "1970s"
+              },
+              {
+                "rank": 4,
+                "matchId": "1977-12-22_1977-12-22",
+                "startDate": "1977-12-22",
+                "endDate": "1977-12-22",
+                "similarity": 0.9005,
+                "decade": "1970s"
+              },
+              {
+                "rank": 5,
+                "matchId": "1977-12-21_1977-12-21",
+                "startDate": "1977-12-21",
+                "endDate": "1977-12-21",
+                "similarity": 0.8993,
+                "decade": "1970s"
+              },
+              {
+                "rank": 6,
+                "matchId": "1977-12-20_1977-12-20",
+                "startDate": "1977-12-20",
+                "endDate": "1977-12-20",
+                "similarity": 0.8982,
+                "decade": "1970s"
+              },
+              {
+                "rank": 7,
+                "matchId": "1977-12-29_1977-12-29",
+                "startDate": "1977-12-29",
+                "endDate": "1977-12-29",
+                "similarity": 0.898,
+                "decade": "1970s"
+              },
+              {
+                "rank": 8,
+                "matchId": "1995-04-27_1995-04-27",
+                "startDate": "1995-04-27",
+                "endDate": "1995-04-27",
+                "similarity": 0.8978,
+                "decade": "1990s"
+              },
+              {
+                "rank": 9,
+                "matchId": "1977-12-19_1977-12-19",
+                "startDate": "1977-12-19",
+                "endDate": "1977-12-19",
+                "similarity": 0.8969,
+                "decade": "1970s"
+              },
+              {
+                "rank": 10,
+                "matchId": "1995-04-28_1995-04-28",
+                "startDate": "1995-04-28",
+                "endDate": "1995-04-28",
+                "similarity": 0.8966,
+                "decade": "1990s"
+              }
+            ],
+            "diagnostics": {
+              "similarity": 0.9605461084283167,
+              "entropy": 0.03945389157168333,
+              "coverageYears": 53,
+              "matchCount": 5,
+              "windowLen": 180
+            },
+            "decision": {
+              "action": "LONG",
+              "size": 1,
+              "confidence": 90,
+              "entropy": 0.03945389157168333,
+              "reasons": [
+                "30d tactical signal",
+                "Forecast: 0.10%"
+              ],
+              "regimeBias": "USD_STRENGTHENING",
+              "forecastReturn": 0.001,
+              "macroAdjustedConfidence": 90
+            }
+          },
+          "synthetic": {
+            "path": [
+              {
+                "t": 0,
+                "date": "2026-02-21",
+                "value": 117.9917,
+                "pct": 0
+              },
+              {
+                "t": 1,
+                "date": "2026-02-22",
+                "value": 117.8091,
+                "pct": -0.0015
+              },
+              {
+                "t": 2,
+                "date": "2026-02-23",
+                "value": 117.4576,
+                "pct": -0.0045
+              },
+              {
+                "t": 3,
+                "date": "2026-02-24",
+                "value": 117.6931,
+                "pct": -0.0025
+              },
+              {
+                "t": 4,
+                "date": "2026-02-25",
+                "value": 117.684,
+                "pct": -0.0026
+              },
+              {
+                "t": 5,
+                "date": "2026-02-26",
+                "value": 117.6247,
+                "pct": -0.0031
+              },
+              {
+                "t": 6,
+                "date": "2026-02-27",
+                "value": 117.3152,
+                "pct": -0.0057
+              },
+              {
+                "t": 7,
+                "date": "2026-02-28",
+                "value": 117.5073,
+                "pct": -0.0041
+              },
+              {
+                "t": 8,
+                "date": "2026-03-01",
+                "value": 117.5675,
+                "pct": -0.0036
+              },
+              {
+                "t": 9,
+                "date": "2026-03-02",
+                "value": 117.8978,
+                "pct": -0.0008
+              },
+              {
+                "t": 10,
+                "date": "2026-03-03",
+                "value": 118.1015,
+                "pct": 0.0009
+              },
+              {
+                "t": 11,
+                "date": "2026-03-04",
+                "value": 118.0609,
+                "pct": 0.0006
+              },
+              {
+                "t": 12,
+                "date": "2026-03-05",
+                "value": 118.1665,
+                "pct": 0.0015
+              },
+              {
+                "t": 13,
+                "date": "2026-03-06",
+                "value": 118.1087,
+                "pct": 0.001
+              },
+              {
+                "t": 14,
+                "date": "2026-03-07",
+                "value": 117.9699,
+                "pct": -0.0002
+              },
+              {
+                "t": 15,
+                "date": "2026-03-08",
+                "value": 117.9034,
+                "pct": -0.0007
+              },
+              {
+                "t": 16,
+                "date": "2026-03-09",
+                "value": 117.8325,
+                "pct": -0.0013
+              },
+              {
+                "t": 17,
+                "date": "2026-03-10",
+                "value": 117.9156,
+                "pct": -0.0006
+              },
+              {
+                "t": 18,
+                "date": "2026-03-11",
+                "value": 118.1049,
+                "pct": 0.001
+              },
+              {
+                "t": 19,
+                "date": "2026-03-12",
+                "value": 117.908,
+                "pct": -0.0007
+              },
+              {
+                "t": 20,
+                "date": "2026-03-13",
+                "value": 117.9208,
+                "pct": -0.0006
+              },
+              {
+                "t": 21,
+                "date": "2026-03-14",
+                "value": 117.897,
+                "pct": -0.0008
+              },
+              {
+                "t": 22,
+                "date": "2026-03-15",
+                "value": 117.7215,
+                "pct": -0.0023
+              },
+              {
+                "t": 23,
+                "date": "2026-03-16",
+                "value": 117.6393,
+                "pct": -0.003
+              },
+              {
+                "t": 24,
+                "date": "2026-03-17",
+                "value": 117.8257,
+                "pct": -0.0014
+              },
+              {
+                "t": 25,
+                "date": "2026-03-18",
+                "value": 117.9954,
+                "pct": 0
+              },
+              {
+                "t": 26,
+                "date": "2026-03-19",
+                "value": 117.9715,
+                "pct": -0.0002
+              },
+              {
+                "t": 27,
+                "date": "2026-03-20",
+                "value": 118.0023,
+                "pct": 0.0001
+              },
+              {
+                "t": 28,
+                "date": "2026-03-21",
+                "value": 118.0951,
+                "pct": 0.0009
+              },
+              {
+                "t": 29,
+                "date": "2026-03-22",
+                "value": 118.1053,
+                "pct": 0.001
+              }
+            ],
+            "bands": {
+              "p10": [
+                {
+                  "t": 0,
+                  "date": "2026-02-21",
+                  "value": 117.9917,
+                  "pct": 0
+                },
+                {
+                  "t": 1,
+                  "date": "2026-02-22",
+                  "value": 117.2769,
+                  "pct": -0.0061
+                },
+                {
+                  "t": 2,
+                  "date": "2026-02-23",
+                  "value": 117.1097,
+                  "pct": -0.0075
+                },
+                {
+                  "t": 3,
+                  "date": "2026-02-24",
+                  "value": 116.5326,
+                  "pct": -0.0124
+                },
+                {
+                  "t": 4,
+                  "date": "2026-02-25",
+                  "value": 116.0019,
+                  "pct": -0.0169
+                },
+                {
+                  "t": 5,
+                  "date": "2026-02-26",
+                  "value": 115.9558,
+                  "pct": -0.0173
+                },
+                {
+                  "t": 6,
+                  "date": "2026-02-27",
+                  "value": 116.716,
+                  "pct": -0.0108
+                },
+                {
+                  "t": 7,
+                  "date": "2026-02-28",
+                  "value": 116.7482,
+                  "pct": -0.0105
+                },
+                {
+                  "t": 8,
+                  "date": "2026-03-01",
+                  "value": 116.6418,
+                  "pct": -0.0114
+                },
+                {
+                  "t": 9,
+                  "date": "2026-03-02",
+                  "value": 117.2269,
+                  "pct": -0.0065
+                },
+                {
+                  "t": 10,
+                  "date": "2026-03-03",
+                  "value": 117.6882,
+                  "pct": -0.0026
+                },
+                {
+                  "t": 11,
+                  "date": "2026-03-04",
+                  "value": 117.5427,
+                  "pct": -0.0038
+                },
+                {
+                  "t": 12,
+                  "date": "2026-03-05",
+                  "value": 117.6153,
+                  "pct": -0.0032
+                },
+                {
+                  "t": 13,
+                  "date": "2026-03-06",
+                  "value": 117.5993,
+                  "pct": -0.0033
+                },
+                {
+                  "t": 14,
+                  "date": "2026-03-07",
+                  "value": 117.8812,
+                  "pct": -0.0009
+                },
+                {
+                  "t": 15,
+                  "date": "2026-03-08",
+                  "value": 117.9412,
+                  "pct": -0.0004
+                },
+                {
+                  "t": 16,
+                  "date": "2026-03-09",
+                  "value": 117.9732,
+                  "pct": -0.0002
+                },
+                {
+                  "t": 17,
+                  "date": "2026-03-10",
+                  "value": 117.8822,
+                  "pct": -0.0009
+                },
+                {
+                  "t": 18,
+                  "date": "2026-03-11",
+                  "value": 117.5958,
+                  "pct": -0.0034
+                },
+                {
+                  "t": 19,
+                  "date": "2026-03-12",
+                  "value": 117.4436,
+                  "pct": -0.0046
+                },
+                {
+                  "t": 20,
+                  "date": "2026-03-13",
+                  "value": 117.3405,
+                  "pct": -0.0055
+                },
+                {
+                  "t": 21,
+                  "date": "2026-03-14",
+                  "value": 117.3823,
+                  "pct": -0.0052
+                },
+                {
+                  "t": 22,
+                  "date": "2026-03-15",
+                  "value": 117.6441,
+                  "pct": -0.0029
+                },
+                {
+                  "t": 23,
+                  "date": "2026-03-16",
+                  "value": 117.6576,
+                  "pct": -0.0028
+                },
+                {
+                  "t": 24,
+                  "date": "2026-03-17",
+                  "value": 117.6734,
+                  "pct": -0.0027
+                },
+                {
+                  "t": 25,
+                  "date": "2026-03-18",
+                  "value": 117.7746,
+                  "pct": -0.0018
+                },
+                {
+                  "t": 26,
+                  "date": "2026-03-19",
+                  "value": 117.8445,
+                  "pct": -0.0012
+                },
+                {
+                  "t": 27,
+                  "date": "2026-03-20",
+                  "value": 117.8564,
+                  "pct": -0.0011
+                },
+                {
+                  "t": 28,
+                  "date": "2026-03-21",
+                  "value": 117.9136,
+                  "pct": -0.0007
+                },
+                {
+                  "t": 29,
+                  "date": "2026-03-22",
+                  "value": 117.8981,
+                  "pct": -0.0008
+                }
+              ],
+              "p50": [
+                {
+                  "t": 0,
+                  "date": "2026-02-21",
+                  "value": 117.9917,
+                  "pct": 0
+                },
+                {
+                  "t": 1,
+                  "date": "2026-02-22",
+                  "value": 117.8091,
+                  "pct": -0.0015
+                },
+                {
+                  "t": 2,
+                  "date": "2026-02-23",
+                  "value": 117.4576,
+                  "pct": -0.0045
+                },
+                {
+                  "t": 3,
+                  "date": "2026-02-24",
+                  "value": 117.6931,
+                  "pct": -0.0025
+                },
+                {
+                  "t": 4,
+                  "date": "2026-02-25",
+                  "value": 117.684,
+                  "pct": -0.0026
+                },
+                {
+                  "t": 5,
+                  "date": "2026-02-26",
+                  "value": 117.6247,
+                  "pct": -0.0031
+                },
+                {
+                  "t": 6,
+                  "date": "2026-02-27",
+                  "value": 117.3152,
+                  "pct": -0.0057
+                },
+                {
+                  "t": 7,
+                  "date": "2026-02-28",
+                  "value": 117.5073,
+                  "pct": -0.0041
+                },
+                {
+                  "t": 8,
+                  "date": "2026-03-01",
+                  "value": 117.5675,
+                  "pct": -0.0036
+                },
+                {
+                  "t": 9,
+                  "date": "2026-03-02",
+                  "value": 117.8978,
+                  "pct": -0.0008
+                },
+                {
+                  "t": 10,
+                  "date": "2026-03-03",
+                  "value": 118.1015,
+                  "pct": 0.0009
+                },
+                {
+                  "t": 11,
+                  "date": "2026-03-04",
+                  "value": 118.0609,
+                  "pct": 0.0006
+                },
+                {
+                  "t": 12,
+                  "date": "2026-03-05",
+                  "value": 118.1665,
+                  "pct": 0.0015
+                },
+                {
+                  "t": 13,
+                  "date": "2026-03-06",
+                  "value": 118.1087,
+                  "pct": 0.001
+                },
+                {
+                  "t": 14,
+                  "date": "2026-03-07",
+                  "value": 117.9699,
+                  "pct": -0.0002
+                },
+                {
+                  "t": 15,
+                  "date": "2026-03-08",
+                  "value": 117.9034,
+                  "pct": -0.0007
+                },
+                {
+                  "t": 16,
+                  "date": "2026-03-09",
+                  "value": 117.8325,
+                  "pct": -0.0013
+                },
+                {
+                  "t": 17,
+                  "date": "2026-03-10",
+                  "value": 117.9156,
+                  "pct": -0.0006
+                },
+                {
+                  "t": 18,
+                  "date": "2026-03-11",
+                  "value": 118.1049,
+                  "pct": 0.001
+                },
+                {
+                  "t": 19,
+                  "date": "2026-03-12",
+                  "value": 117.908,
+                  "pct": -0.0007
+                },
+                {
+                  "t": 20,
+                  "date": "2026-03-13",
+                  "value": 117.9208,
+                  "pct": -0.0006
+                },
+                {
+                  "t": 21,
+                  "date": "2026-03-14",
+                  "value": 117.897,
+                  "pct": -0.0008
+                },
+                {
+                  "t": 22,
+                  "date": "2026-03-15",
+                  "value": 117.7215,
+                  "pct": -0.0023
+                },
+                {
+                  "t": 23,
+                  "date": "2026-03-16",
+                  "value": 117.6393,
+                  "pct": -0.003
+                },
+                {
+                  "t": 24,
+                  "date": "2026-03-17",
+                  "value": 117.8257,
+                  "pct": -0.0014
+                },
+                {
+                  "t": 25,
+                  "date": "2026-03-18",
+                  "value": 117.9954,
+                  "pct": 0
+                },
+                {
+                  "t": 26,
+                  "date": "2026-03-19",
+                  "value": 117.9715,
+                  "pct": -0.0002
+                },
+                {
+                  "t": 27,
+                  "date": "2026-03-20",
+                  "value": 118.0023,
+                  "pct": 0.0001
+                },
+                {
+                  "t": 28,
+                  "date": "2026-03-21",
+                  "value": 118.0951,
+                  "pct": 0.0009
+                },
+                {
+                  "t": 29,
+                  "date": "2026-03-22",
+                  "value": 118.1053,
+                  "pct": 0.001
+                }
+              ],
+              "p90": [
+                {
+                  "t": 0,
+                  "date": "2026-02-21",
+                  "value": 117.9917,
+                  "pct": 0
+                },
+                {
+                  "t": 1,
+                  "date": "2026-02-22",
+                  "value": 118.4506,
+                  "pct": 0.0039
+                },
+                {
+                  "t": 2,
+                  "date": "2026-02-23",
+                  "value": 118.4032,
+                  "pct": 0.0035
+                },
+                {
+                  "t": 3,
+                  "date": "2026-02-24",
+                  "value": 118.4629,
+                  "pct": 0.004
+                },
+                {
+                  "t": 4,
+                  "date": "2026-02-25",
+                  "value": 118.0775,
+                  "pct": 0.0007
+                },
+                {
+                  "t": 5,
+                  "date": "2026-02-26",
+                  "value": 117.6468,
+                  "pct": -0.0029
+                },
+                {
+                  "t": 6,
+                  "date": "2026-02-27",
+                  "value": 117.9069,
+                  "pct": -0.0007
+                },
+                {
+                  "t": 7,
+                  "date": "2026-02-28",
+                  "value": 117.7068,
+                  "pct": -0.0024
+                },
+                {
+                  "t": 8,
+                  "date": "2026-03-01",
+                  "value": 118.2428,
+                  "pct": 0.0021
+                },
+                {
+                  "t": 9,
+                  "date": "2026-03-02",
+                  "value": 119.5017,
+                  "pct": 0.0128
+                },
+                {
+                  "t": 10,
+                  "date": "2026-03-03",
+                  "value": 120.1352,
+                  "pct": 0.0182
+                },
+                {
+                  "t": 11,
+                  "date": "2026-03-04",
+                  "value": 119.6786,
+                  "pct": 0.0143
+                },
+                {
+                  "t": 12,
+                  "date": "2026-03-05",
+                  "value": 119.9026,
+                  "pct": 0.0162
+                },
+                {
+                  "t": 13,
+                  "date": "2026-03-06",
+                  "value": 120.3168,
+                  "pct": 0.0197
+                },
+                {
+                  "t": 14,
+                  "date": "2026-03-07",
+                  "value": 120.1962,
+                  "pct": 0.0187
+                },
+                {
+                  "t": 15,
+                  "date": "2026-03-08",
+                  "value": 120.4115,
+                  "pct": 0.0205
+                },
+                {
+                  "t": 16,
+                  "date": "2026-03-09",
+                  "value": 120.8555,
+                  "pct": 0.0243
+                },
+                {
+                  "t": 17,
+                  "date": "2026-03-10",
+                  "value": 120.4962,
+                  "pct": 0.0212
+                },
+                {
+                  "t": 18,
+                  "date": "2026-03-11",
+                  "value": 118.7923,
+                  "pct": 0.0068
+                },
+                {
+                  "t": 19,
+                  "date": "2026-03-12",
+                  "value": 118.1437,
+                  "pct": 0.0013
+                },
+                {
+                  "t": 20,
+                  "date": "2026-03-13",
+                  "value": 117.7635,
+                  "pct": -0.0019
+                },
+                {
+                  "t": 21,
+                  "date": "2026-03-14",
+                  "value": 118.0848,
+                  "pct": 0.0008
+                },
+                {
+                  "t": 22,
+                  "date": "2026-03-15",
+                  "value": 118.9541,
+                  "pct": 0.0082
+                },
+                {
+                  "t": 23,
+                  "date": "2026-03-16",
+                  "value": 119.0866,
+                  "pct": 0.0093
+                },
+                {
+                  "t": 24,
+                  "date": "2026-03-17",
+                  "value": 118.5874,
+                  "pct": 0.005
+                },
+                {
+                  "t": 25,
+                  "date": "2026-03-18",
+                  "value": 118.8296,
+                  "pct": 0.0071
+                },
+                {
+                  "t": 26,
+                  "date": "2026-03-19",
+                  "value": 118.6293,
+                  "pct": 0.0054
+                },
+                {
+                  "t": 27,
+                  "date": "2026-03-20",
+                  "value": 118.8417,
+                  "pct": 0.0072
+                },
+                {
+                  "t": 28,
+                  "date": "2026-03-21",
+                  "value": 118.5098,
+                  "pct": 0.0044
+                },
+                {
+                  "t": 29,
+                  "date": "2026-03-22",
+                  "value": 118.4129,
+                  "pct": 0.0036
+                }
+              ]
+            },
+            "forecast": {
+              "bear": -0.0008,
+              "base": 0.001,
+              "bull": 0.0036
+            }
+          },
+          "replay": {
+            "matchId": "1977-04-01_1977-12-27",
+            "rank": 1,
+            "similarity": 0.9027,
+            "window": [
+              {
+                "t": 0,
+                "date": "2025-06-02T00:00:00.000Z",
+                "value": 121.1881,
+                "pct": 0
+              },
+              {
+                "t": 1,
+                "date": "2025-06-03T00:00:00.000Z",
+                "value": 121.2898,
+                "pct": 0.0008
+              },
+              {
+                "t": 2,
+                "date": "2025-06-04T00:00:00.000Z",
+                "value": 121.0849,
+                "pct": -0.0009
+              },
+              {
+                "t": 3,
+                "date": "2025-06-05T00:00:00.000Z",
+                "value": 121.06,
+                "pct": -0.0011
+              },
+              {
+                "t": 4,
+                "date": "2025-06-06T00:00:00.000Z",
+                "value": 121.1555,
+                "pct": -0.0003
+              },
+              {
+                "t": 5,
+                "date": "2025-06-09T00:00:00.000Z",
+                "value": 121.0713,
+                "pct": -0.001
+              },
+              {
+                "t": 6,
+                "date": "2025-06-10T00:00:00.000Z",
+                "value": 120.8275,
+                "pct": -0.003
+              },
+              {
+                "t": 7,
+                "date": "2025-06-11T00:00:00.000Z",
+                "value": 120.5877,
+                "pct": -0.005
+              },
+              {
+                "t": 8,
+                "date": "2025-06-12T00:00:00.000Z",
+                "value": 120.627,
+                "pct": -0.0046
+              },
+              {
+                "t": 9,
+                "date": "2025-06-13T00:00:00.000Z",
+                "value": 120.6954,
+                "pct": -0.0041
+              },
+              {
+                "t": 10,
+                "date": "2025-06-16T00:00:00.000Z",
+                "value": 120.7617,
+                "pct": -0.0035
+              },
+              {
+                "t": 11,
+                "date": "2025-06-17T00:00:00.000Z",
+                "value": 120.9135,
+                "pct": -0.0023
+              },
+              {
+                "t": 12,
+                "date": "2025-06-18T00:00:00.000Z",
+                "value": 120.9585,
+                "pct": -0.0019
+              },
+              {
+                "t": 13,
+                "date": "2025-06-20T00:00:00.000Z",
+                "value": 121.2242,
+                "pct": 0.0003
+              },
+              {
+                "t": 14,
+                "date": "2025-06-23T00:00:00.000Z",
+                "value": 121.0691,
+                "pct": -0.001
+              },
+              {
+                "t": 15,
+                "date": "2025-06-24T00:00:00.000Z",
+                "value": 121.1631,
+                "pct": -0.0002
+              },
+              {
+                "t": 16,
+                "date": "2025-06-25T00:00:00.000Z",
+                "value": 121.0837,
+                "pct": -0.0009
+              },
+              {
+                "t": 17,
+                "date": "2025-06-26T00:00:00.000Z",
+                "value": 121.202,
+                "pct": 0.0001
+              },
+              {
+                "t": 18,
+                "date": "2025-06-27T00:00:00.000Z",
+                "value": 121.0578,
+                "pct": -0.0011
+              },
+              {
+                "t": 19,
+                "date": "2025-06-30T00:00:00.000Z",
+                "value": 120.9008,
+                "pct": -0.0024
+              },
+              {
+                "t": 20,
+                "date": "2025-07-01T00:00:00.000Z",
+                "value": 120.9247,
+                "pct": -0.0022
+              },
+              {
+                "t": 21,
+                "date": "2025-07-02T00:00:00.000Z",
+                "value": 120.8903,
+                "pct": -0.0025
+              },
+              {
+                "t": 22,
+                "date": "2025-07-03T00:00:00.000Z",
+                "value": 121.0251,
+                "pct": -0.0013
+              },
+              {
+                "t": 23,
+                "date": "2025-07-07T00:00:00.000Z",
+                "value": 120.7203,
+                "pct": -0.0039
+              },
+              {
+                "t": 24,
+                "date": "2025-07-08T00:00:00.000Z",
+                "value": 120.6824,
+                "pct": -0.0042
+              },
+              {
+                "t": 25,
+                "date": "2025-07-09T00:00:00.000Z",
+                "value": 120.8104,
+                "pct": -0.0031
+              },
+              {
+                "t": 26,
+                "date": "2025-07-10T00:00:00.000Z",
+                "value": 121.0871,
+                "pct": -0.0008
+              },
+              {
+                "t": 27,
+                "date": "2025-07-11T00:00:00.000Z",
+                "value": 120.9953,
+                "pct": -0.0016
+              },
+              {
+                "t": 28,
+                "date": "2025-07-14T00:00:00.000Z",
+                "value": 121.1724,
+                "pct": -0.0001
+              },
+              {
+                "t": 29,
+                "date": "2025-07-15T00:00:00.000Z",
+                "value": 121.1883,
+                "pct": 0
+              },
+              {
+                "t": 30,
+                "date": "2025-07-16T00:00:00.000Z",
+                "value": 121.1241,
+                "pct": -0.0005
+              },
+              {
+                "t": 31,
+                "date": "2025-07-17T00:00:00.000Z",
+                "value": 121.0816,
+                "pct": -0.0009
+              },
+              {
+                "t": 32,
+                "date": "2025-07-18T00:00:00.000Z",
+                "value": 120.957,
+                "pct": -0.0019
+              },
+              {
+                "t": 33,
+                "date": "2025-07-21T00:00:00.000Z",
+                "value": 120.9283,
+                "pct": -0.0021
+              },
+              {
+                "t": 34,
+                "date": "2025-07-22T00:00:00.000Z",
+                "value": 120.9154,
+                "pct": -0.0023
+              },
+              {
+                "t": 35,
+                "date": "2025-07-23T00:00:00.000Z",
+                "value": 121.0578,
+                "pct": -0.0011
+              },
+              {
+                "t": 36,
+                "date": "2025-07-24T00:00:00.000Z",
+                "value": 121.0874,
+                "pct": -0.0008
+              },
+              {
+                "t": 37,
+                "date": "2025-07-25T00:00:00.000Z",
+                "value": 121.1217,
+                "pct": -0.0005
+              },
+              {
+                "t": 38,
+                "date": "2025-07-28T00:00:00.000Z",
+                "value": 121.0153,
+                "pct": -0.0014
+              },
+              {
+                "t": 39,
+                "date": "2025-07-29T00:00:00.000Z",
+                "value": 120.9287,
+                "pct": -0.0021
+              },
+              {
+                "t": 40,
+                "date": "2025-07-30T00:00:00.000Z",
+                "value": 121.0089,
+                "pct": -0.0015
+              },
+              {
+                "t": 41,
+                "date": "2025-07-31T00:00:00.000Z",
+                "value": 121.0675,
+                "pct": -0.001
+              },
+              {
+                "t": 42,
+                "date": "2025-08-01T00:00:00.000Z",
+                "value": 121.1362,
+                "pct": -0.0004
+              },
+              {
+                "t": 43,
+                "date": "2025-08-04T00:00:00.000Z",
+                "value": 121.1003,
+                "pct": -0.0007
+              },
+              {
+                "t": 44,
+                "date": "2025-08-05T00:00:00.000Z",
+                "value": 121.0492,
+                "pct": -0.0011
+              },
+              {
+                "t": 45,
+                "date": "2025-08-06T00:00:00.000Z",
+                "value": 120.9374,
+                "pct": -0.0021
+              },
+              {
+                "t": 46,
+                "date": "2025-08-07T00:00:00.000Z",
+                "value": 121.0854,
+                "pct": -0.0008
+              },
+              {
+                "t": 47,
+                "date": "2025-08-08T00:00:00.000Z",
+                "value": 120.8701,
+                "pct": -0.0026
+              },
+              {
+                "t": 48,
+                "date": "2025-08-11T00:00:00.000Z",
+                "value": 120.7639,
+                "pct": -0.0035
+              },
+              {
+                "t": 49,
+                "date": "2025-08-12T00:00:00.000Z",
+                "value": 120.8534,
+                "pct": -0.0028
+              },
+              {
+                "t": 50,
+                "date": "2025-08-13T00:00:00.000Z",
+                "value": 120.6364,
+                "pct": -0.0046
+              },
+              {
+                "t": 51,
+                "date": "2025-08-14T00:00:00.000Z",
+                "value": 120.7392,
+                "pct": -0.0037
+              },
+              {
+                "t": 52,
+                "date": "2025-08-15T00:00:00.000Z",
+                "value": 120.7244,
+                "pct": -0.0038
+              },
+              {
+                "t": 53,
+                "date": "2025-08-18T00:00:00.000Z",
+                "value": 120.706,
+                "pct": -0.004
+              },
+              {
+                "t": 54,
+                "date": "2025-08-19T00:00:00.000Z",
+                "value": 120.8152,
+                "pct": -0.0031
+              },
+              {
+                "t": 55,
+                "date": "2025-08-20T00:00:00.000Z",
+                "value": 120.9084,
+                "pct": -0.0023
+              },
+              {
+                "t": 56,
+                "date": "2025-08-21T00:00:00.000Z",
+                "value": 120.9345,
+                "pct": -0.0021
+              },
+              {
+                "t": 57,
+                "date": "2025-08-22T00:00:00.000Z",
+                "value": 120.7797,
+                "pct": -0.0034
+              },
+              {
+                "t": 58,
+                "date": "2025-08-25T00:00:00.000Z",
+                "value": 120.8066,
+                "pct": -0.0031
+              },
+              {
+                "t": 59,
+                "date": "2025-08-26T00:00:00.000Z",
+                "value": 120.8212,
+                "pct": -0.003
+              },
+              {
+                "t": 60,
+                "date": "2025-08-27T00:00:00.000Z",
+                "value": 120.8327,
+                "pct": -0.0029
+              },
+              {
+                "t": 61,
+                "date": "2025-08-28T00:00:00.000Z",
+                "value": 120.7427,
+                "pct": -0.0037
+              },
+              {
+                "t": 62,
+                "date": "2025-08-29T00:00:00.000Z",
+                "value": 120.166,
+                "pct": -0.0084
+              },
+              {
+                "t": 63,
+                "date": "2025-09-02T00:00:00.000Z",
+                "value": 120.1299,
+                "pct": -0.0087
+              },
+              {
+                "t": 64,
+                "date": "2025-09-03T00:00:00.000Z",
+                "value": 120.0602,
+                "pct": -0.0093
+              },
+              {
+                "t": 65,
+                "date": "2025-09-04T00:00:00.000Z",
+                "value": 119.4451,
+                "pct": -0.0144
+              },
+              {
+                "t": 66,
+                "date": "2025-09-05T00:00:00.000Z",
+                "value": 119.5519,
+                "pct": -0.0135
+              },
+              {
+                "t": 67,
+                "date": "2025-09-08T00:00:00.000Z",
+                "value": 119.4233,
+                "pct": -0.0146
+              },
+              {
+                "t": 68,
+                "date": "2025-09-09T00:00:00.000Z",
+                "value": 119.4117,
+                "pct": -0.0147
+              },
+              {
+                "t": 69,
+                "date": "2025-09-10T00:00:00.000Z",
+                "value": 119.5981,
+                "pct": -0.0131
+              },
+              {
+                "t": 70,
+                "date": "2025-09-11T00:00:00.000Z",
+                "value": 119.5,
+                "pct": -0.0139
+              },
+              {
+                "t": 71,
+                "date": "2025-09-12T00:00:00.000Z",
+                "value": 119.6462,
+                "pct": -0.0127
+              },
+              {
+                "t": 72,
+                "date": "2025-09-15T00:00:00.000Z",
+                "value": 119.2892,
+                "pct": -0.0157
+              },
+              {
+                "t": 73,
+                "date": "2025-09-16T00:00:00.000Z",
+                "value": 119.2821,
+                "pct": -0.0157
+              },
+              {
+                "t": 74,
+                "date": "2025-09-17T00:00:00.000Z",
+                "value": 119.3043,
+                "pct": -0.0155
+              },
+              {
+                "t": 75,
+                "date": "2025-09-18T00:00:00.000Z",
+                "value": 119.3854,
+                "pct": -0.0149
+              },
+              {
+                "t": 76,
+                "date": "2025-09-19T00:00:00.000Z",
+                "value": 119.1833,
+                "pct": -0.0165
+              },
+              {
+                "t": 77,
+                "date": "2025-09-22T00:00:00.000Z",
+                "value": 119.0667,
+                "pct": -0.0175
+              },
+              {
+                "t": 78,
+                "date": "2025-09-23T00:00:00.000Z",
+                "value": 119.1664,
+                "pct": -0.0167
+              },
+              {
+                "t": 79,
+                "date": "2025-09-24T00:00:00.000Z",
+                "value": 119.2534,
+                "pct": -0.016
+              },
+              {
+                "t": 80,
+                "date": "2025-09-25T00:00:00.000Z",
+                "value": 119.5755,
+                "pct": -0.0133
+              },
+              {
+                "t": 81,
+                "date": "2025-09-26T00:00:00.000Z",
+                "value": 120.0176,
+                "pct": -0.0097
+              },
+              {
+                "t": 82,
+                "date": "2025-09-29T00:00:00.000Z",
+                "value": 120.187,
+                "pct": -0.0083
+              },
+              {
+                "t": 83,
+                "date": "2025-09-30T00:00:00.000Z",
+                "value": 120.0498,
+                "pct": -0.0094
+              },
+              {
+                "t": 84,
+                "date": "2025-10-01T00:00:00.000Z",
+                "value": 120.0241,
+                "pct": -0.0096
+              },
+              {
+                "t": 85,
+                "date": "2025-10-02T00:00:00.000Z",
+                "value": 120.0402,
+                "pct": -0.0095
+              },
+              {
+                "t": 86,
+                "date": "2025-10-03T00:00:00.000Z",
+                "value": 119.9648,
+                "pct": -0.0101
+              },
+              {
+                "t": 87,
+                "date": "2025-10-06T00:00:00.000Z",
+                "value": 120.2934,
+                "pct": -0.0074
+              },
+              {
+                "t": 88,
+                "date": "2025-10-07T00:00:00.000Z",
+                "value": 120.284,
+                "pct": -0.0075
+              },
+              {
+                "t": 89,
+                "date": "2025-10-08T00:00:00.000Z",
+                "value": 120.501,
+                "pct": -0.0057
+              },
+              {
+                "t": 90,
+                "date": "2025-10-09T00:00:00.000Z",
+                "value": 120.3673,
+                "pct": -0.0068
+              },
+              {
+                "t": 91,
+                "date": "2025-10-10T00:00:00.000Z",
+                "value": 120.6924,
+                "pct": -0.0041
+              },
+              {
+                "t": 92,
+                "date": "2025-10-14T00:00:00.000Z",
+                "value": 120.7876,
+                "pct": -0.0033
+              },
+              {
+                "t": 93,
+                "date": "2025-10-15T00:00:00.000Z",
+                "value": 120.9224,
+                "pct": -0.0022
+              },
+              {
+                "t": 94,
+                "date": "2025-10-16T00:00:00.000Z",
+                "value": 120.6086,
+                "pct": -0.0048
+              },
+              {
+                "t": 95,
+                "date": "2025-10-17T00:00:00.000Z",
+                "value": 120.6557,
+                "pct": -0.0044
+              },
+              {
+                "t": 96,
+                "date": "2025-10-20T00:00:00.000Z",
+                "value": 120.6835,
+                "pct": -0.0042
+              },
+              {
+                "t": 97,
+                "date": "2025-10-21T00:00:00.000Z",
+                "value": 120.5139,
+                "pct": -0.0056
+              },
+              {
+                "t": 98,
+                "date": "2025-10-22T00:00:00.000Z",
+                "value": 120.3927,
+                "pct": -0.0066
+              },
+              {
+                "t": 99,
+                "date": "2025-10-23T00:00:00.000Z",
+                "value": 120.0881,
+                "pct": -0.0091
+              },
+              {
+                "t": 100,
+                "date": "2025-10-24T00:00:00.000Z",
+                "value": 120.4295,
+                "pct": -0.0063
+              },
+              {
+                "t": 101,
+                "date": "2025-10-27T00:00:00.000Z",
+                "value": 120.3877,
+                "pct": -0.0066
+              },
+              {
+                "t": 102,
+                "date": "2025-10-28T00:00:00.000Z",
+                "value": 120.8367,
+                "pct": -0.0029
+              },
+              {
+                "t": 103,
+                "date": "2025-10-29T00:00:00.000Z",
+                "value": 120.8587,
+                "pct": -0.0027
+              },
+              {
+                "t": 104,
+                "date": "2025-10-30T00:00:00.000Z",
+                "value": 120.9018,
+                "pct": -0.0024
+              },
+              {
+                "t": 105,
+                "date": "2025-10-31T00:00:00.000Z",
+                "value": 120.6985,
+                "pct": -0.004
+              },
+              {
+                "t": 106,
+                "date": "2025-11-03T00:00:00.000Z",
+                "value": 120.718,
+                "pct": -0.0039
+              },
+              {
+                "t": 107,
+                "date": "2025-11-04T00:00:00.000Z",
+                "value": 120.7974,
+                "pct": -0.0032
+              },
+              {
+                "t": 108,
+                "date": "2025-11-05T00:00:00.000Z",
+                "value": 120.8606,
+                "pct": -0.0027
+              },
+              {
+                "t": 109,
+                "date": "2025-11-06T00:00:00.000Z",
+                "value": 120.8008,
+                "pct": -0.0032
+              },
+              {
+                "t": 110,
+                "date": "2025-11-07T00:00:00.000Z",
+                "value": 120.8906,
+                "pct": -0.0025
+              },
+              {
+                "t": 111,
+                "date": "2025-11-10T00:00:00.000Z",
+                "value": 120.8277,
+                "pct": -0.003
+              },
+              {
+                "t": 112,
+                "date": "2025-11-12T00:00:00.000Z",
+                "value": 120.8689,
+                "pct": -0.0026
+              },
+              {
+                "t": 113,
+                "date": "2025-11-13T00:00:00.000Z",
+                "value": 120.8341,
+                "pct": -0.0029
+              },
+              {
+                "t": 114,
+                "date": "2025-11-14T00:00:00.000Z",
+                "value": 120.7605,
+                "pct": -0.0035
+              },
+              {
+                "t": 115,
+                "date": "2025-11-17T00:00:00.000Z",
+                "value": 120.6903,
+                "pct": -0.0041
+              },
+              {
+                "t": 116,
+                "date": "2025-11-18T00:00:00.000Z",
+                "value": 120.6994,
+                "pct": -0.004
+              },
+              {
+                "t": 117,
+                "date": "2025-11-19T00:00:00.000Z",
+                "value": 120.7475,
+                "pct": -0.0036
+              },
+              {
+                "t": 118,
+                "date": "2025-11-20T00:00:00.000Z",
+                "value": 120.702,
+                "pct": -0.004
+              },
+              {
+                "t": 119,
+                "date": "2025-11-21T00:00:00.000Z",
+                "value": 120.7359,
+                "pct": -0.0037
+              },
+              {
+                "t": 120,
+                "date": "2025-11-24T00:00:00.000Z",
+                "value": 120.7007,
+                "pct": -0.004
+              },
+              {
+                "t": 121,
+                "date": "2025-11-25T00:00:00.000Z",
+                "value": 120.4656,
+                "pct": -0.006
+              },
+              {
+                "t": 122,
+                "date": "2025-11-26T00:00:00.000Z",
+                "value": 120.1528,
+                "pct": -0.0085
+              },
+              {
+                "t": 123,
+                "date": "2025-11-28T00:00:00.000Z",
+                "value": 119.6807,
+                "pct": -0.0124
+              },
+              {
+                "t": 124,
+                "date": "2025-12-01T00:00:00.000Z",
+                "value": 119.8996,
+                "pct": -0.0106
+              },
+              {
+                "t": 125,
+                "date": "2025-12-02T00:00:00.000Z",
+                "value": 119.9546,
+                "pct": -0.0102
+              },
+              {
+                "t": 126,
+                "date": "2025-12-03T00:00:00.000Z",
+                "value": 119.6697,
+                "pct": -0.0125
+              },
+              {
+                "t": 127,
+                "date": "2025-12-04T00:00:00.000Z",
+                "value": 119.6034,
+                "pct": -0.0131
+              },
+              {
+                "t": 128,
+                "date": "2025-12-05T00:00:00.000Z",
+                "value": 119.7813,
+                "pct": -0.0116
+              },
+              {
+                "t": 129,
+                "date": "2025-12-08T00:00:00.000Z",
+                "value": 119.5995,
+                "pct": -0.0131
+              },
+              {
+                "t": 130,
+                "date": "2025-12-09T00:00:00.000Z",
+                "value": 119.536,
+                "pct": -0.0136
+              },
+              {
+                "t": 131,
+                "date": "2025-12-10T00:00:00.000Z",
+                "value": 119.1514,
+                "pct": -0.0168
+              },
+              {
+                "t": 132,
+                "date": "2025-12-11T00:00:00.000Z",
+                "value": 119.1434,
+                "pct": -0.0169
+              },
+              {
+                "t": 133,
+                "date": "2025-12-12T00:00:00.000Z",
+                "value": 119.197,
+                "pct": -0.0164
+              },
+              {
+                "t": 134,
+                "date": "2025-12-15T00:00:00.000Z",
+                "value": 119.3879,
+                "pct": -0.0149
+              },
+              {
+                "t": 135,
+                "date": "2025-12-16T00:00:00.000Z",
+                "value": 119.4837,
+                "pct": -0.0141
+              },
+              {
+                "t": 136,
+                "date": "2025-12-17T00:00:00.000Z",
+                "value": 119.431,
+                "pct": -0.0145
+              },
+              {
+                "t": 137,
+                "date": "2025-12-18T00:00:00.000Z",
+                "value": 119.0998,
+                "pct": -0.0172
+              },
+              {
+                "t": 138,
+                "date": "2025-12-19T00:00:00.000Z",
+                "value": 119.2725,
+                "pct": -0.0158
+              },
+              {
+                "t": 139,
+                "date": "2025-12-22T00:00:00.000Z",
+                "value": 119.1434,
+                "pct": -0.0169
+              },
+              {
+                "t": 140,
+                "date": "2025-12-23T00:00:00.000Z",
+                "value": 118.9997,
+                "pct": -0.0181
+              },
+              {
+                "t": 141,
+                "date": "2025-12-24T00:00:00.000Z",
+                "value": 118.719,
+                "pct": -0.0204
+              },
+              {
+                "t": 142,
+                "date": "2025-12-26T00:00:00.000Z",
+                "value": 118.1949,
+                "pct": -0.0247
+              },
+              {
+                "t": 143,
+                "date": "2025-12-29T00:00:00.000Z",
+                "value": 117.5312,
+                "pct": -0.0302
+              },
+              {
+                "t": 144,
+                "date": "2025-12-30T00:00:00.000Z",
+                "value": 118.008,
+                "pct": -0.0262
+              },
+              {
+                "t": 145,
+                "date": "2025-12-31T00:00:00.000Z",
+                "value": 118.124,
+                "pct": -0.0253
+              },
+              {
+                "t": 146,
+                "date": "2026-01-02T00:00:00.000Z",
+                "value": 118.4918,
+                "pct": -0.0222
+              },
+              {
+                "t": 147,
+                "date": "2026-01-05T00:00:00.000Z",
+                "value": 118.5352,
+                "pct": -0.0219
+              },
+              {
+                "t": 148,
+                "date": "2026-01-06T00:00:00.000Z",
+                "value": 118.4779,
+                "pct": -0.0224
+              },
+              {
+                "t": 149,
+                "date": "2026-01-07T00:00:00.000Z",
+                "value": 118.0353,
+                "pct": -0.026
+              },
+              {
+                "t": 150,
+                "date": "2026-01-08T00:00:00.000Z",
+                "value": 117.9895,
+                "pct": -0.0264
+              },
+              {
+                "t": 151,
+                "date": "2026-01-09T00:00:00.000Z",
+                "value": 118.0035,
+                "pct": -0.0263
+              },
+              {
+                "t": 152,
+                "date": "2026-01-12T00:00:00.000Z",
+                "value": 117.863,
+                "pct": -0.0274
+              },
+              {
+                "t": 153,
+                "date": "2026-01-13T00:00:00.000Z",
+                "value": 117.9517,
+                "pct": -0.0267
+              },
+              {
+                "t": 154,
+                "date": "2026-01-14T00:00:00.000Z",
+                "value": 117.6122,
+                "pct": -0.0295
+              },
+              {
+                "t": 155,
+                "date": "2026-01-15T00:00:00.000Z",
+                "value": 117.5081,
+                "pct": -0.0304
+              },
+              {
+                "t": 156,
+                "date": "2026-01-16T00:00:00.000Z",
+                "value": 117.2435,
+                "pct": -0.0325
+              },
+              {
+                "t": 157,
+                "date": "2026-01-20T00:00:00.000Z",
+                "value": 117.1159,
+                "pct": -0.0336
+              },
+              {
+                "t": 158,
+                "date": "2026-01-21T00:00:00.000Z",
+                "value": 116.9656,
+                "pct": -0.0348
+              },
+              {
+                "t": 159,
+                "date": "2026-01-22T00:00:00.000Z",
+                "value": 116.8984,
+                "pct": -0.0354
+              },
+              {
+                "t": 160,
+                "date": "2026-01-23T00:00:00.000Z",
+                "value": 117.4336,
+                "pct": -0.031
+              },
+              {
+                "t": 161,
+                "date": "2026-01-26T00:00:00.000Z",
+                "value": 117.4289,
+                "pct": -0.031
+              },
+              {
+                "t": 162,
+                "date": "2026-01-27T00:00:00.000Z",
+                "value": 117.2153,
+                "pct": -0.0328
+              },
+              {
+                "t": 163,
+                "date": "2026-01-28T00:00:00.000Z",
+                "value": 117.0305,
+                "pct": -0.0343
+              },
+              {
+                "t": 164,
+                "date": "2026-01-29T00:00:00.000Z",
+                "value": 116.6681,
+                "pct": -0.0373
+              },
+              {
+                "t": 165,
+                "date": "2026-01-30T00:00:00.000Z",
+                "value": 116.4062,
+                "pct": -0.0395
+              },
+              {
+                "t": 166,
+                "date": "2026-02-02T00:00:00.000Z",
+                "value": 116.151,
+                "pct": -0.0416
+              },
+              {
+                "t": 167,
+                "date": "2026-02-03T00:00:00.000Z",
+                "value": 116.038,
+                "pct": -0.0425
+              },
+              {
+                "t": 168,
+                "date": "2026-02-04T00:00:00.000Z",
+                "value": 116.2775,
+                "pct": -0.0405
+              },
+              {
+                "t": 169,
+                "date": "2026-02-05T00:00:00.000Z",
+                "value": 116.1503,
+                "pct": -0.0416
+              },
+              {
+                "t": 170,
+                "date": "2026-02-06T00:00:00.000Z",
+                "value": 115.7788,
+                "pct": -0.0446
+              },
+              {
+                "t": 171,
+                "date": "2026-02-09T00:00:00.000Z",
+                "value": 115.0912,
+                "pct": -0.0503
+              },
+              {
+                "t": 172,
+                "date": "2026-02-10T00:00:00.000Z",
+                "value": 115.3375,
+                "pct": -0.0483
+              },
+              {
+                "t": 173,
+                "date": "2026-02-11T00:00:00.000Z",
+                "value": 115.4095,
+                "pct": -0.0477
+              },
+              {
+                "t": 174,
+                "date": "2026-02-12T00:00:00.000Z",
+                "value": 114.7926,
+                "pct": -0.0528
+              },
+              {
+                "t": 175,
+                "date": "2026-02-13T00:00:00.000Z",
+                "value": 114.6822,
+                "pct": -0.0537
+              },
+              {
+                "t": 176,
+                "date": "2026-02-17T00:00:00.000Z",
+                "value": 114.6244,
+                "pct": -0.0542
+              },
+              {
+                "t": 177,
+                "date": "2026-02-18T00:00:00.000Z",
+                "value": 115.4698,
+                "pct": -0.0472
+              },
+              {
+                "t": 178,
+                "date": "2026-02-19T00:00:00.000Z",
+                "value": 115.4127,
+                "pct": -0.0477
+              },
+              {
+                "t": 179,
+                "date": "2026-02-20T00:00:00.000Z",
+                "value": 115.465,
+                "pct": -0.0472
+              }
+            ],
+            "continuation": [
+              {
+                "t": 0,
+                "value": 117.9917,
+                "pct": 0
+              },
+              {
+                "t": 1,
+                "value": 117.4371,
+                "pct": -0.0047
+              },
+              {
+                "t": 2,
+                "value": 117.3309,
+                "pct": -0.0056
+              },
+              {
+                "t": 3,
+                "value": 116.151,
+                "pct": -0.0156
+              },
+              {
+                "t": 4,
+                "value": 116.0212,
+                "pct": -0.0167
+              },
+              {
+                "t": 5,
+                "value": 118.3929,
+                "pct": 0.0034
+              },
+              {
+                "t": 6,
+                "value": 117.6377,
+                "pct": -0.003
+              },
+              {
+                "t": 7,
+                "value": 118.2041,
+                "pct": 0.0018
+              },
+              {
+                "t": 8,
+                "value": 118.1451,
+                "pct": 0.0013
+              },
+              {
+                "t": 9,
+                "value": 117.4843,
+                "pct": -0.0043
+              },
+              {
+                "t": 10,
+                "value": 117.9091,
+                "pct": -0.0007
+              },
+              {
+                "t": 11,
+                "value": 117.7557,
+                "pct": -0.002
+              },
+              {
+                "t": 12,
+                "value": 117.7321,
+                "pct": -0.0022
+              },
+              {
+                "t": 13,
+                "value": 118.0507,
+                "pct": 0.0005
+              },
+              {
+                "t": 14,
+                "value": 118.1687,
+                "pct": 0.0015
+              },
+              {
+                "t": 15,
+                "value": 118.1333,
+                "pct": 0.0012
+              },
+              {
+                "t": 16,
+                "value": 118.0507,
+                "pct": 0.0005
+              },
+              {
+                "t": 17,
+                "value": 117.7439,
+                "pct": -0.0021
+              },
+              {
+                "t": 18,
+                "value": 117.5905,
+                "pct": -0.0034
+              },
+              {
+                "t": 19,
+                "value": 117.4607,
+                "pct": -0.0045
+              },
+              {
+                "t": 20,
+                "value": 117.5197,
+                "pct": -0.004
+              },
+              {
+                "t": 21,
+                "value": 117.8501,
+                "pct": -0.0012
+              },
+              {
+                "t": 22,
+                "value": 117.8619,
+                "pct": -0.0011
+              },
+              {
+                "t": 23,
+                "value": 117.8029,
+                "pct": -0.0016
+              },
+              {
+                "t": 24,
+                "value": 117.9209,
+                "pct": -0.0006
+              },
+              {
+                "t": 25,
+                "value": 117.9917,
+                "pct": 0
+              },
+              {
+                "t": 26,
+                "value": 118.0861,
+                "pct": 0.0008
+              },
+              {
+                "t": 27,
+                "value": 118.0507,
+                "pct": 0.0005
+              },
+              {
+                "t": 28,
+                "value": 118.1451,
+                "pct": 0.0013
+              },
+              {
+                "t": 29,
+                "value": 118.0861,
+                "pct": 0.0008
+              }
+            ]
+          },
+          "hybrid": {
+            "replayWeight": 0.5,
+            "path": [
+              {
+                "t": 0,
+                "date": "2026-02-21",
+                "value": 117.9917,
+                "pct": 0
+              },
+              {
+                "t": 1,
+                "date": "2026-02-22",
+                "value": 117.6259,
+                "pct": -0.0031
+              },
+              {
+                "t": 2,
+                "date": "2026-02-23",
+                "value": 117.3958,
+                "pct": -0.005
+              },
+              {
+                "t": 3,
+                "date": "2026-02-24",
+                "value": 116.9239,
+                "pct": -0.0091
+              },
+              {
+                "t": 4,
+                "date": "2026-02-25",
+                "value": 116.8531,
+                "pct": -0.0096
+              },
+              {
+                "t": 5,
+                "date": "2026-02-26",
+                "value": 118.0094,
+                "pct": 0.0001
+              },
+              {
+                "t": 6,
+                "date": "2026-02-27",
+                "value": 117.4784,
+                "pct": -0.0043
+              },
+              {
+                "t": 7,
+                "date": "2026-02-28",
+                "value": 117.856,
+                "pct": -0.0012
+              },
+              {
+                "t": 8,
+                "date": "2026-03-01",
+                "value": 117.856,
+                "pct": -0.0011
+              },
+              {
+                "t": 9,
+                "date": "2026-03-02",
+                "value": 117.6908,
+                "pct": -0.0026
+              },
+              {
+                "t": 10,
+                "date": "2026-03-03",
+                "value": 118.0035,
+                "pct": 0.0001
+              },
+              {
+                "t": 11,
+                "date": "2026-03-04",
+                "value": 117.9091,
+                "pct": -0.0007
+              },
+              {
+                "t": 12,
+                "date": "2026-03-05",
+                "value": 117.9504,
+                "pct": -0.0003
+              },
+              {
+                "t": 13,
+                "date": "2026-03-06",
+                "value": 118.0802,
+                "pct": 0.0007
+              },
+              {
+                "t": 14,
+                "date": "2026-03-07",
+                "value": 118.0684,
+                "pct": 0.0006
+              },
+              {
+                "t": 15,
+                "date": "2026-03-08",
+                "value": 118.0212,
+                "pct": 0.0002
+              },
+              {
+                "t": 16,
+                "date": "2026-03-09",
+                "value": 117.9445,
+                "pct": -0.0004
+              },
+              {
+                "t": 17,
+                "date": "2026-03-10",
+                "value": 117.8324,
+                "pct": -0.0013
+              },
+              {
+                "t": 18,
+                "date": "2026-03-11",
+                "value": 117.8501,
+                "pct": -0.0012
+              },
+              {
+                "t": 19,
+                "date": "2026-03-12",
+                "value": 117.6849,
+                "pct": -0.0026
+              },
+              {
+                "t": 20,
+                "date": "2026-03-13",
+                "value": 117.7203,
+                "pct": -0.0023
+              },
+              {
+                "t": 21,
+                "date": "2026-03-14",
+                "value": 117.8737,
+                "pct": -0.001
+              },
+              {
+                "t": 22,
+                "date": "2026-03-15",
+                "value": 117.7911,
+                "pct": -0.0017
+              },
+              {
+                "t": 23,
+                "date": "2026-03-16",
+                "value": 117.7203,
+                "pct": -0.0023
+              },
+              {
+                "t": 24,
+                "date": "2026-03-17",
+                "value": 117.8737,
+                "pct": -0.001
+              },
+              {
+                "t": 25,
+                "date": "2026-03-18",
+                "value": 117.9917,
+                "pct": 0
+              },
+              {
+                "t": 26,
+                "date": "2026-03-19",
+                "value": 118.0271,
+                "pct": 0.0003
+              },
+              {
+                "t": 27,
+                "date": "2026-03-20",
+                "value": 118.0271,
+                "pct": 0.0003
+              },
+              {
+                "t": 28,
+                "date": "2026-03-21",
+                "value": 118.1215,
+                "pct": 0.0011
+              },
+              {
+                "t": 29,
+                "date": "2026-03-22",
+                "value": 118.0979,
+                "pct": 0.0009
+              }
+            ],
+            "breakdown": {
+              "modelReturn": 0.001,
+              "replayReturn": 0.0008,
+              "hybridReturn": 0.0009
+            }
+          },
+          "macro": {
+            "path": [
+              {
+                "t": 0,
+                "date": "2026-02-21",
+                "value": 117.9917,
+                "pct": 0
+              },
+              {
+                "t": 1,
+                "date": "2026-02-22",
+                "value": 117.6259,
+                "pct": -0.0031
+              },
+              {
+                "t": 2,
+                "date": "2026-02-23",
+                "value": 117.4017,
+                "pct": -0.005
+              },
+              {
+                "t": 3,
+                "date": "2026-02-24",
+                "value": 116.918,
+                "pct": -0.0091
+              },
+              {
+                "t": 4,
+                "date": "2026-02-25",
+                "value": 116.859,
+                "pct": -0.0096
+              },
+              {
+                "t": 5,
+                "date": "2026-02-26",
+                "value": 118.0035,
+                "pct": 0.0001
+              },
+              {
+                "t": 6,
+                "date": "2026-02-27",
+                "value": 117.4843,
+                "pct": -0.0043
+              },
+              {
+                "t": 7,
+                "date": "2026-02-28",
+                "value": 117.8501,
+                "pct": -0.0012
+              },
+              {
+                "t": 8,
+                "date": "2026-03-01",
+                "value": 117.8619,
+                "pct": -0.0011
+              },
+              {
+                "t": 9,
+                "date": "2026-03-02",
+                "value": 117.6849,
+                "pct": -0.0026
+              },
+              {
+                "t": 10,
+                "date": "2026-03-03",
+                "value": 118.0035,
+                "pct": 0.0001
+              },
+              {
+                "t": 11,
+                "date": "2026-03-04",
+                "value": 117.9091,
+                "pct": -0.0007
+              },
+              {
+                "t": 12,
+                "date": "2026-03-05",
+                "value": 117.9563,
+                "pct": -0.0003
+              },
+              {
+                "t": 13,
+                "date": "2026-03-06",
+                "value": 118.0743,
+                "pct": 0.0007
+              },
+              {
+                "t": 14,
+                "date": "2026-03-07",
+                "value": 118.0625,
+                "pct": 0.0006
+              },
+              {
+                "t": 15,
+                "date": "2026-03-08",
+                "value": 118.0153,
+                "pct": 0.0002
+              },
+              {
+                "t": 16,
+                "date": "2026-03-09",
+                "value": 117.9445,
+                "pct": -0.0004
+              },
+              {
+                "t": 17,
+                "date": "2026-03-10",
+                "value": 117.8383,
+                "pct": -0.0013
+              },
+              {
+                "t": 18,
+                "date": "2026-03-11",
+                "value": 117.8501,
+                "pct": -0.0012
+              },
+              {
+                "t": 19,
+                "date": "2026-03-12",
+                "value": 117.6849,
+                "pct": -0.0026
+              },
+              {
+                "t": 20,
+                "date": "2026-03-13",
+                "value": 117.7203,
+                "pct": -0.0023
+              },
+              {
+                "t": 21,
+                "date": "2026-03-14",
+                "value": 117.8737,
+                "pct": -0.001
+              },
+              {
+                "t": 22,
+                "date": "2026-03-15",
+                "value": 117.7911,
+                "pct": -0.0017
+              },
+              {
+                "t": 23,
+                "date": "2026-03-16",
+                "value": 117.7203,
+                "pct": -0.0023
+              },
+              {
+                "t": 24,
+                "date": "2026-03-17",
+                "value": 117.8737,
+                "pct": -0.001
+              },
+              {
+                "t": 25,
+                "date": "2026-03-18",
+                "value": 117.9917,
+                "pct": 0
+              },
+              {
+                "t": 26,
+                "date": "2026-03-19",
+                "value": 118.0271,
+                "pct": 0.0003
+              },
+              {
+                "t": 27,
+                "date": "2026-03-20",
+                "value": 118.0271,
+                "pct": 0.0003
+              },
+              {
+                "t": 28,
+                "date": "2026-03-21",
+                "value": 118.1215,
+                "pct": 0.0011
+              },
+              {
+                "t": 29,
+                "date": "2026-03-22",
+                "value": 118.0979,
+                "pct": 0.0009
+              }
+            ],
+            "adjustment": {
+              "scoreSigned": 0,
+              "maxAdjustment": 0,
+              "description": "Hybrid (no macro data)",
+              "deltaReturnEnd": 0
+            }
+          }
+        },
+        "has_data": false
+      }
+    },
+    {
+      "test": "GET /api/fractal/spx/terminal",
+      "passed": true,
+      "details": {
+        "status_code": 200,
+        "response": {
+          "ok": true,
+          "symbol": "SPX",
+          "focus": "30d",
+          "processingTimeMs": 1187,
+          "contract": {
+            "module": "fractal",
+            "version": "SPX_V2.1.0",
+            "frozen": false,
+            "horizons": [
+              7,
+              14,
+              30
+            ],
+            "symbol": "SPX",
+            "generatedAt": "2026-02-27T14:13:56.543Z",
+            "asofCandleTs": 1772201636846
+          },
+          "market": {
+            "phase": "DISTRIBUTION",
+            "sma200": "ABOVE",
+            "currentPrice": 6909.51,
+            "volatility": 0.5
+          },
+          "decision": {
+            "action": "LONG",
+            "confidence": 0.22799999999999998,
+            "reliability": 0.38,
+            "sizeMultiplier": 0.07599999999999998,
+            "preset": "BALANCED",
+            "cascadeAdjusted": {
+              "action": "BUY",
+              "confidenceOriginal": 0.38,
+              "confidenceAdjusted": 0.35264,
+              "sizeMultiplier": 0.928,
+              "finalExposure01": 0.32724992
+            }
+          },
+          "diagnostics": {
+            "asset": "SPX",
+            "sources": {
+              "matches": "SPX_MATCHES",
+              "entropy": "SPX_SCAN",
+              "tailRisk": "SPX_MATCHES",
+              "drawdown": "SPX_MATCHES"
+            },
+            "similarity": 94.62474178712651,
+            "directionMatch": 0,
+            "projectionGap": -3.52,
+            "quality": 0.752,
+            "sampleSize": 10,
+            "effectiveN": 10,
+            "entropy": 0.8,
+            "coverageYears": 76.4
+          },
+          "explain": {
+            "topMatches": [
+              {
+                "id": "1964-06-10",
+                "date": "1964-06-10",
+                "similarity": 94.62474178712651,
+                "phase": "DISTRIBUTION",
+                "return": 5.085599194360531,
+                "maxDrawdown": 0.6308772765147019,
+                "windowNormalized": [
+                  0,
+                  -0.0016129032258065125,
+                  -0.007930107526881766,
+                  -0.00577956989247321,
+                  -0.0010752688172044691,
+                  0.0005376344086020435,
+                  0.002150537634408556,
+                  0.008333333333333203,
+                  0.01384408602150539,
+                  0.014784946236559062,
+                  0.017069892473118225,
+                  0.017338709677419246,
+                  0.021505376344085943,
+                  0.025268817204301013,
+                  0.02473118279569878,
+                  0.024462365591397757,
+                  0.02634408602150529,
+                  0.03010752688172036,
+                  0.028897849462365476,
+                  0.029032258064516082,
+                  0.02701612903225794,
+                  0.029838709677419337,
+                  0.03534946236559133,
+                  0.03615591397849459,
+                  0.036424731182795614,
+                  0.036021505376343986,
+                  0.036290322580645004,
+                  0.029973118279569753,
+                  0.030913978494623615,
+                  0.03548387096774194,
+                  0.03454301075268808,
+                  0.033333333333333194,
+                  0.03158602150537627,
+                  0.034005376344086034,
+                  0.03736559139784947,
+                  0.03561827956989236,
+                  0.039381720430107424,
+                  0.04260752688172026,
+                  0.041935483870967606,
+                  0.04139784946236556,
+                  0.04112903225806435,
+                  0.04126344086021496,
+                  0.042338709677419234,
+                  0.0432795698924731,
+                  0.044086021505376355,
+                  0.044086021505376355,
+                  0.04663978494623654,
+                  0.0432795698924731,
+                  0.04569892473118268,
+                  0.04798387096774184,
+                  0.05134408602150528,
+                  0.04932795698924714,
+                  0.049193548387096726,
+                  0.052553763440860164,
+                  0.05282258064516119,
+                  0.05631720430107524,
+                  0.06115591397849458,
+                  0.06290322580645151,
+                  0.06370967741935477,
+                  0.06370967741935477,
+                  0.06612903225806434,
+                  0.0669354838709676,
+                  0.06586021505376333,
+                  0.060752688172042955,
+                  0.06088709677419356,
+                  0.05900537634408602,
+                  0.06155913978494621,
+                  0.06438172043010741,
+                  0.06370967741935477,
+                  0.06155913978494621,
+                  0.06505376344086007,
+                  0.0712365591397849,
+                  0.07446236559139774,
+                  0.07553763440860202,
+                  0.07177419354838695,
+                  0.07190860215053756,
+                  0.0712365591397849,
+                  0.07325268817204285,
+                  0.07217741935483857,
+                  0.07513440860215038,
+                  0.07647849462365587,
+                  0.07795698924731179,
+                  0.08266129032258053,
+                  0.08198924731182787,
+                  0.08252688172043011,
+                  0.08185483870967727,
+                  0.08037634408602136,
+                  0.07190860215053756,
+                  0.06653225806451597,
+                  0.07392473118279569,
+                  0.0712365591397849,
+                  0.06801075268817187,
+                  0.07755376344086015,
+                  0.08158602150537625,
+                  0.08709677419354825,
+                  0.08951612903225802,
+                  0.09072580645161289,
+                  0.05698924731182788,
+                  0.08736559139784945,
+                  0.09086021505376331,
+                  0.08830645161290313,
+                  0.08682795698924722,
+                  0.09005376344086005,
+                  0.08494623655913969,
+                  0.07930107526881708,
+                  0.08413978494623643,
+                  0.0879032258064515,
+                  0.0850806451612903,
+                  0.08279569892473113,
+                  0.08051075268817197,
+                  0.07876344086021504,
+                  0.08024193548387094,
+                  0.0767473118279569,
+                  0.0712365591397849,
+                  0.06841397849462351,
+                  0.05739247311827951,
+                  0.062096774193548254,
+                  0.05698924731182788,
+                  0.06370967741935477,
+                  0.06774193548387085
+                ],
+                "aftermathNormalized": [
+                  0.0036505538771400585,
+                  0.002014098690835808,
+                  0.006671701913393771,
+                  0.012084592145015206,
+                  0.01724572004028203,
+                  0.0169939577039276,
+                  0.018252769385699936,
+                  0.021022155085599216,
+                  0.01674219536757299,
+                  0.02039274924471305,
+                  0.02228096676737155,
+                  0.025427995971802567,
+                  0.02769385699899299,
+                  0.028323262839879154,
+                  0.03562437059415909,
+                  0.039778449144008014,
+                  0.04456193353474328,
+                  0.04632426988922466,
+                  0.04632426988922466,
+                  0.04758308157099699,
+                  0.04934541792547837,
+                  0.048716012084592204,
+                  0.04556898288016119,
+                  0.04909365558912394,
+                  0.052870090634441126,
+                  0.05752769385699909,
+                  0.05412890231621346,
+                  0.05161127895266879,
+                  0.05135951661631418,
+                  0.050855991943605315
+                ]
+              },
+              {
+                "id": "1964-06-09",
+                "date": "1964-06-09",
+                "similarity": 94.60388044864763,
+                "phase": "DISTRIBUTION",
+                "return": 5.534495830174368,
+                "maxDrawdown": 0.5832638971551114,
+                "windowNormalized": [
+                  0,
+                  -0.003081870561436283,
+                  -0.004689803028272737,
+                  -0.010987538523381928,
+                  -0.008843628567600115,
+                  -0.004153825539327379,
+                  -0.002545893072490925,
+                  -0.0009379606056544712,
+                  0.005225780517218285,
+                  0.010719549778909439,
+                  0.01165751038456391,
+                  0.013935414712582157,
+                  0.014203403457054835,
+                  0.018357228996382213,
+                  0.02210907141900048,
+                  0.02157309393005493,
+                  0.021305105185582252,
+                  0.023181026396891385,
+                  0.02693286881950965,
+                  0.02572691946938231,
+                  0.025860913841618746,
+                  0.02385099825807318,
+                  0.02666488007503697,
+                  0.032158649336727935,
+                  0.03296261557014616,
+                  0.03323060431461884,
+                  0.032828621197909726,
+                  0.03309660994238241,
+                  0.026798874447273215,
+                  0.02773683505292788,
+                  0.03229264370896437,
+                  0.03135468310330971,
+                  0.030148733753182368,
+                  0.02840680691410967,
+                  0.03081870561436435,
+                  0.0341685649202735,
+                  0.032426638081200616,
+                  0.03617848050381888,
+                  0.039394345437491596,
+                  0.038724373576309805,
+                  0.03818839608736445,
+                  0.03792040734289158,
+                  0.038054401715128014,
+                  0.03912635669301892,
+                  0.04006431729867358,
+                  0.040868283532091806,
+                  0.040868283532091806,
+                  0.04341417660458273,
+                  0.04006431729867358,
+                  0.04247621599892807,
+                  0.04475412032694632,
+                  0.04810397963285547,
+                  0.0460940640493099,
+                  0.04596006967707366,
+                  0.04930992898298281,
+                  0.04957791772745549,
+                  0.053061771405601074,
+                  0.057885568806110246,
+                  0.059627495645182944,
+                  0.06043146187860117,
+                  0.06043146187860117,
+                  0.06284336057885566,
+                  0.06364732681227389,
+                  0.06257537183438298,
+                  0.05748358568940113,
+                  0.057617580061637565,
+                  0.05574165885032843,
+                  0.05828755192281936,
+                  0.06110143373978296,
+                  0.06043146187860117,
+                  0.05828755192281936,
+                  0.06177140560096476,
+                  0.0679351467238377,
+                  0.07115101165751042,
+                  0.07222296663540133,
+                  0.06847112421278306,
+                  0.0686051185850195,
+                  0.0679351467238377,
+                  0.06994506230738308,
+                  0.06887310732949217,
+                  0.0718209835186922,
+                  0.07316092724105598,
+                  0.07463486533565601,
+                  0.07932466836392875,
+                  0.07865469650274695,
+                  0.0791906739916925,
+                  0.07852070213051052,
+                  0.0770467640359105,
+                  0.0686051185850195,
+                  0.06324534369556477,
+                  0.07061503416856506,
+                  0.0679351467238377,
+                  0.0647192817901648,
+                  0.07423288221894689,
+                  0.07825271338603784,
+                  0.0837464826477288,
+                  0.08615838134798348,
+                  0.08736433069811082,
+                  0.053731743266782865,
+                  0.08401447139220167,
+                  0.08749832507034706,
+                  0.08495243199785614,
+                  0.08347849390325612,
+                  0.08669435883692884,
+                  0.08160257269194698,
+                  0.0759748090580196,
+                  0.08079860645852877,
+                  0.08455044888114703,
+                  0.08173656706418342,
+                  0.07945866273616518,
+                  0.07718075840814694,
+                  0.07543883156907423,
+                  0.07691276966367425,
+                  0.07342891598552867,
+                  0.0679351467238377,
+                  0.06512126490687391,
+                  0.05413372638349198,
+                  0.05882352941176472,
+                  0.053731743266782865,
+                  0.06043146187860117
+                ],
+                "aftermathNormalized": [
+                  0.0037907505686125493,
+                  0.007455142784938127,
+                  0.005812484205205885,
+                  0.01048774323982813,
+                  0.015921152388172922,
+                  0.02110184483194341,
+                  0.02084912812736929,
+                  0.02211271165024008,
+                  0.024892595400555963,
+                  0.02059641142279499,
+                  0.024260803639120566,
+                  0.02615617892342675,
+                  0.029315137730603905,
+                  0.03158958807177154,
+                  0.032221379833206935,
+                  0.03955016426585792,
+                  0.04371998989133174,
+                  0.04852160727824113,
+                  0.05029062421026035,
+                  0.05029062421026035,
+                  0.05155420773313114,
+                  0.053323224665150354,
+                  0.05269143290371495,
+                  0.049532474096537805,
+                  0.05307050796057623,
+                  0.05686125852918878,
+                  0.061536517563811025,
+                  0.05812484205205957,
+                  0.05559767500631799,
+                  0.055344958301743685
+                ]
+              },
+              {
+                "id": "2006-05-03",
+                "date": "2006-05-03",
+                "similarity": 94.56513703196711,
+                "phase": "DISTRIBUTION",
+                "return": -3.9721126502155624,
+                "maxDrawdown": 7.698980207579044,
+                "windowNormalized": [
+                  0,
+                  0.008446319583828243,
+                  0.011526645639618183,
+                  0.010740179412607954,
+                  0.006848810060213738,
+                  0.00865112849711215,
+                  0.01814606971695397,
+                  0.022627288739605858,
+                  0.028017859337238205,
+                  0.033244582804243576,
+                  0.036832834964977516,
+                  0.03899561708925565,
+                  0.03015606439192229,
+                  0.030172449104984986,
+                  0.023618563879899992,
+                  0.036062753451030174,
+                  0.03639864006881566,
+                  0.03394912546594013,
+                  0.035268094867488595,
+                  0.030082333183139964,
+                  0.028828902633842482,
+                  0.03172080448941121,
+                  0.032589194281735116,
+                  0.03832384385368449,
+                  0.04267398517183461,
+                  0.04119936099619052,
+                  0.03823372793183946,
+                  0.03217138409863596,
+                  0.03192561340269512,
+                  0.03452259042313511,
+                  0.03888911645434793,
+                  0.03933150370704132,
+                  0.029402367591037454,
+                  0.03073772170564861,
+                  0.027665588006390022,
+                  0.022643673452668555,
+                  0.0394461966984802,
+                  0.04326383484209228,
+                  0.04328021955515498,
+                  0.053086470323188424,
+                  0.0569368778929259,
+                  0.05656002949248348,
+                  0.06023839757506244,
+                  0.05358620407160107,
+                  0.05485601933396125,
+                  0.05102199647728667,
+                  0.046925818211608544,
+                  0.052750583705402754,
+                  0.033457584074058834,
+                  0.035366403145864776,
+                  0.03785687953139705,
+                  0.03607094580756152,
+                  0.043566952033752375,
+                  0.05166919264326378,
+                  0.052873469053373166,
+                  0.04868717486585002,
+                  0.0506369557203129,
+                  0.04111743743087685,
+                  0.03553844263302329,
+                  0.03634948592962756,
+                  0.027960512841518764,
+                  0.0368656043911031,
+                  0.03533363371973938,
+                  0.037963380166304767,
+                  0.03457993691885455,
+                  0.04495965264408297,
+                  0.048621636013599236,
+                  0.05630606644001148,
+                  0.054552902142301164,
+                  0.05110392004260016,
+                  0.05900135173882765,
+                  0.05500348175152572,
+                  0.056347028222668225,
+                  0.06018924343587416,
+                  0.049162331544668814,
+                  0.05782984475484366,
+                  0.05610944988325892,
+                  0.054544709785769814,
+                  0.04719616597714324,
+                  0.04524638512268055,
+                  0.04736820546430175,
+                  0.04225617498873545,
+                  0.04978495064105188,
+                  0.05200507926104945,
+                  0.06294187523040996,
+                  0.06748044074878129,
+                  0.06937287510752455,
+                  0.070945807561545,
+                  0.06916806619424064,
+                  0.06273706631712606,
+                  0.06913529676811524,
+                  0.06637447261704828,
+                  0.06742309425306185,
+                  0.06632531847786,
+                  0.05946012370458356,
+                  0.06737394011387376,
+                  0.06521115798959563,
+                  0.06080367017572588,
+                  0.06321222299594466,
+                  0.06986441649940603,
+                  0.0744767132265595,
+                  0.07241223938065773,
+                  0.06131978863720141,
+                  0.06223733256871322,
+                  0.054004014254700236,
+                  0.05527382951706041,
+                  0.05609306517019604,
+                  0.052988162044812055,
+                  0.07097038463113904,
+                  0.07314135911194852,
+                  0.074394789661246,
+                  0.07424732724368155,
+                  0.07165035022324155,
+                  0.06643181911276771,
+                  0.06943841395977551,
+                  0.07296931962479002,
+                  0.07369843935608061,
+                  0.06925818211608566,
+                  0.07582845205423334,
+                  0.0716585425797729
+                ],
+                "aftermathNormalized": [
+                  0.003157202703116006,
+                  0.013485001376020626,
+                  0.012644099929670208,
+                  0.013011038742623162,
+                  0.011260434822493365,
+                  -0.0016818028927008365,
+                  -0.012904014922178304,
+                  -0.010411888817539593,
+                  -0.012261871999510721,
+                  -0.028896431520044,
+                  -0.0354019508913555,
+                  -0.03141149130049225,
+                  -0.03520319236767266,
+                  -0.03940005504082192,
+                  -0.037878787878787845,
+                  -0.026939424517628187,
+                  -0.021374185854508617,
+                  -0.03688499526037367,
+                  -0.0290722563679173,
+                  -0.01713145582974028,
+                  -0.015212671620340538,
+                  -0.03274164449744667,
+                  -0.033842460936305524,
+                  -0.039728771060758804,
+                  -0.03836803962939167,
+                  -0.042671926122985614,
+                  -0.05403174020732031,
+                  -0.06454300828670141,
+                  -0.059688713573678207,
+                  -0.039721126502155625
+                ]
+              },
+              {
+                "id": "1993-04-22",
+                "date": "1993-04-22",
+                "similarity": 94.54455735359448,
+                "phase": "DISTRIBUTION",
+                "return": 2.412051153688623,
+                "maxDrawdown": 1.3471078141355208,
+                "windowNormalized": [
+                  0,
+                  0.009721027992739068,
+                  0.0029616891181809715,
+                  -0.00374988057705167,
+                  -0.0008120760485335622,
+                  -0.0026273048629025094,
+                  -0.00021496130696482238,
+                  -0.000143307537976503,
+                  0.008407375561287813,
+                  0.010007643068692075,
+                  0.008956721123531098,
+                  0.004776917932549919,
+                  0.0014091907901021663,
+                  0.009959873889366618,
+                  0.011775102703735565,
+                  0.019036017961211356,
+                  0.015381675742810732,
+                  0.021281169389509812,
+                  0.025102703735549802,
+                  0.027419508932836578,
+                  0.030261775102703774,
+                  0.028900353491926926,
+                  0.026774625011942246,
+                  0.026822394191267838,
+                  0.03195758096875895,
+                  0.039720072609152564,
+                  0.04373268367249451,
+                  0.04053214865768599,
+                  0.038119805101748304,
+                  0.035946307442438166,
+                  0.03382057896245335,
+                  0.03317569504155915,
+                  0.03066781312697042,
+                  0.04000668768510557,
+                  0.053979172637814,
+                  0.05259386643737456,
+                  0.05166236744052736,
+                  0.048605139963695344,
+                  0.05037259959873883,
+                  0.04889175503964835,
+                  0.04609725804910674,
+                  0.04810356358077765,
+                  0.04067545619566249,
+                  0.03988726473679179,
+                  0.03740326741186579,
+                  0.0378331900257953,
+                  0.028780930543613286,
+                  0.02476831948027134,
+                  0.029306391516193707,
+                  0.02952135282315853,
+                  0.034274386166045584,
+                  0.04122480175790578,
+                  0.04411483710709843,
+                  0.043374414827553186,
+                  0.03929014999522305,
+                  0.035086462214579145,
+                  0.040149995223082074,
+                  0.04163083978217256,
+                  0.05094582975064484,
+                  0.050802522212668344,
+                  0.046407757714722477,
+                  0.04772141014617373,
+                  0.048008025222126605,
+                  0.05694086175599497,
+                  0.05701251552498329,
+                  0.0681188497181618,
+                  0.07375561287857073,
+                  0.07225088372981751,
+                  0.0696713480462406,
+                  0.0636524314512276,
+                  0.06580204452087515,
+                  0.06921754084264836,
+                  0.061861087226521394,
+                  0.03637623005636768,
+                  0.034919270086939916,
+                  0.03157542753415489,
+                  0.037116652335912916,
+                  0.039552880481513335,
+                  0.038501958536352354,
+                  0.052999904461641344,
+                  0.05651093914206546,
+                  0.05899493646699147,
+                  0.05572274768319476,
+                  0.06979077099455425,
+                  0.07303907518868821,
+                  0.06845323397344026,
+                  0.06551542944492215,
+                  0.08605617655488672,
+                  0.08531575427534148,
+                  0.08992548008025217,
+                  0.08369160217827462,
+                  0.07440049679946494,
+                  0.07822203114550492,
+                  0.07807872360752842,
+                  0.07077003917072704,
+                  0.07932072226999135,
+                  0.07523645743766122,
+                  0.07213146078150375,
+                  0.07184484570555073,
+                  0.07019680901882103,
+                  0.07690837871405366,
+                  0.06950415591860123,
+                  0.07664564822776339,
+                  0.07951179898729345,
+                  0.07879526129741093,
+                  0.07552307251361423,
+                  0.054241903124104277,
+                  0.05639151619375182,
+                  0.05369255756186113,
+                  0.057442438138912796,
+                  0.05531670965892798,
+                  0.07091334670870354,
+                  0.0729435368300373,
+                  0.07160599980892332,
+                  0.07098500047769173,
+                  0.07227476831948025,
+                  0.06873984904939326,
+                  0.06310308588898446,
+                  0.05959205120856021,
+                  0.04963217731919359
+                ],
+                "aftermathNormalized": [
+                  -0.005529513493833357,
+                  -0.013471078141355208,
+                  -0.0032995039366494985,
+                  -0.003276748737086419,
+                  -0.0012970463750966942,
+                  0.0016611295681063537,
+                  0.006826559868930051,
+                  0.01044463659946305,
+                  0.01151413097892869,
+                  0.008646975833978091,
+                  0.0064852318754836,
+                  0.007600236654075529,
+                  0.011150047785919161,
+                  0.012151276566695563,
+                  -0.0005233695899512159,
+                  0.00022755199563105342,
+                  0.0020707231602421724,
+                  0.0019569471624266456,
+                  0.01845446684567427,
+                  0.02532653711373048,
+                  0.014517817321257898,
+                  0.01943294042688759,
+                  0.02136713238975116,
+                  0.031811768989214076,
+                  0.029467983434214823,
+                  0.024416329131206522,
+                  0.032699221772174956,
+                  0.03274473217130124,
+                  0.029650025030719587,
+                  0.02412051153688623
+                ]
+              },
+              {
+                "id": "1964-06-08",
+                "date": "1964-06-08",
+                "similarity": 94.44407471481557,
+                "phase": "DISTRIBUTION",
+                "return": 6.230925737538156,
+                "maxDrawdown": 0.5594572074752991,
+                "windowNormalized": [
+                  0,
+                  -0.0014717687985014642,
+                  -0.004549103559004405,
+                  -0.006154669521006071,
+                  -0.012443136205512345,
+                  -0.010302381589510249,
+                  -0.005619480867005643,
+                  -0.004013914905003976,
+                  -0.0024083489430023097,
+                  0.0037463205780037616,
+                  0.009232004281509392,
+                  0.010168584426010237,
+                  0.012443136205512535,
+                  0.012710730532512749,
+                  0.01685844260101693,
+                  0.02060476317902069,
+                  0.020069574525020072,
+                  0.019801980198019858,
+                  0.021675140487021738,
+                  0.025421461065025498,
+                  0.024217286593524248,
+                  0.024351083757024453,
+                  0.022344126304522368,
+                  0.025153866738025284,
+                  0.030639550441530727,
+                  0.03144233342253156,
+                  0.031709927749531776,
+                  0.03130853625903136,
+                  0.03157613058603157,
+                  0.025287663901525297,
+                  0.026224244046026333,
+                  0.030773347605030928,
+                  0.029836767460529892,
+                  0.028632592989028642,
+                  0.026893229863526963,
+                  0.029301578806529463,
+                  0.03264650789403281,
+                  0.03090714476853094,
+                  0.0346534653465347,
+                  0.03786459727053784,
+                  0.037195611453037215,
+                  0.036660422799036786,
+                  0.03639282847203638,
+                  0.03652662563553658,
+                  0.03759700294353763,
+                  0.03853358308803866,
+                  0.0393363660690395,
+                  0.0393363660690395,
+                  0.04187851217554201,
+                  0.03853358308803866,
+                  0.040941932031040976,
+                  0.04321648381054327,
+                  0.04656141289804662,
+                  0.04455445544554453,
+                  0.04442065828204452,
+                  0.04776558736954787,
+                  0.048033181696548084,
+                  0.05151190794755163,
+                  0.056328605833556436,
+                  0.058067968959058115,
+                  0.05887075194005895,
+                  0.05887075194005895,
+                  0.06127910088306126,
+                  0.0620818838640621,
+                  0.061011506556061045,
+                  0.055927214343056024,
+                  0.05606101150655622,
+                  0.054187851217554345,
+                  0.056729997324056855,
+                  0.05953973775755958,
+                  0.05887075194005895,
+                  0.056729997324056855,
+                  0.06020872357506021,
+                  0.06636339309606648,
+                  0.06957452502006961,
+                  0.07064490232807066,
+                  0.06689858175006691,
+                  0.0670323789135671,
+                  0.06636339309606648,
+                  0.06837035054856837,
+                  0.06729997324056732,
+                  0.07024351083757024,
+                  0.0715814824725717,
+                  0.07305325127107316,
+                  0.07773615199357777,
+                  0.07706716617607715,
+                  0.07760235483007775,
+                  0.07693336901257694,
+                  0.07546160021407547,
+                  0.0670323789135671,
+                  0.06168049237356168,
+                  0.06903933636606918,
+                  0.06636339309606648,
+                  0.06315226117206314,
+                  0.07265185978057274,
+                  0.07666577468557673,
+                  0.08215145838908217,
+                  0.08455980733208467,
+                  0.08576398180358591,
+                  0.052180893765052264,
+                  0.08241905271608257,
+                  0.08589777896708593,
+                  0.08335563286058341,
+                  0.08188386406208195,
+                  0.0850949959860851,
+                  0.08001070377308007,
+                  0.07439122290607443,
+                  0.07920792079207924,
+                  0.082954241370083,
+                  0.08014450093658027,
+                  0.07786994915707797,
+                  0.07559539737757567,
+                  0.073856034252074,
+                  0.07532780305057546,
+                  0.07184907679957192,
+                  0.06636339309606648,
+                  0.06355365266256356,
+                  0.052582285255552676,
+                  0.057265185978057284,
+                  0.052180893765052264
+                ],
+                "aftermathNormalized": [
+                  0.006358087487283825,
+                  0.010172939979654084,
+                  0.013860630722278782,
+                  0.012207527975584864,
+                  0.016912512716174954,
+                  0.02238046795523913,
+                  0.027594099694811823,
+                  0.02733977619532052,
+                  0.028611393692777213,
+                  0.03140895218718208,
+                  0.027085452695829036,
+                  0.030773143438453734,
+                  0.032680569684638776,
+                  0.03585961342828069,
+                  0.03814852492370295,
+                  0.038784333672431295,
+                  0.04615971515768051,
+                  0.050356052899287816,
+                  0.055188199389623646,
+                  0.05696846388606312,
+                  0.05696846388606312,
+                  0.05824008138351981,
+                  0.060020345879959296,
+                  0.059384537131230944,
+                  0.05620549338758903,
+                  0.05976602238046799,
+                  0.06358087487283826,
+                  0.06828585961342834,
+                  0.06485249237029495,
+                  0.06230925737538156
+                ]
+              }
+            ],
+            "noTradeReasons": [
+              "Low pattern reliability",
+              "High outcome uncertainty"
+            ],
+            "influence": [
+              {
+                "factor": "Pattern Similarity",
+                "weight": 0.35,
+                "contribution": "POSITIVE"
+              },
+              {
+                "factor": "Sample Size",
+                "weight": 0.25,
+                "contribution": "NEUTRAL"
+              },
+              {
+                "factor": "Historical Coverage",
+                "weight": 0.2,
+                "contribution": "POSITIVE"
+              },
+              {
+                "factor": "Entropy",
+                "weight": 0.2,
+                "contribution": "NEGATIVE"
+              }
+            ]
+          },
+          "chartData": {
+            "path": [
+              6898.336516979724,
+              6907.791002612265,
+              6945.584211771244,
+              6969.75465965078,
+              6972.280199968018,
+              6920.987591362127,
+              6871.15335643195,
+              6876.734893271751,
+              6865.522356759456,
+              6897.4349606790665,
+              6934.522581450506,
+              6962.023911163701,
+              6968.1601909873925,
+              6976.785219073775,
+              6945.608945142431,
+              6943.889947754696,
+              6952.484934693371,
+              6971.393905958452,
+              6983.4367297565595,
+              6967.096412489116,
+              6979.988892897127,
+              7001.4763602438115,
+              7016.947336733424,
+              7021.2448302027615,
+              7071.09575444707,
+              7078.214870295363,
+              7132.120161711657,
+              7135.760054384928,
+              7114.377144450008,
+              7076.170915669231
+            ],
+            "bands": {
+              "p10": [
+                -0.005843523428200326,
+                -0.013471078141355208,
+                -0.017975283984521254,
+                -0.013743101395952776,
+                -0.018349769067532128,
+                -0.025430148252353582,
+                -0.03527756736283942,
+                -0.03181473866464666,
+                -0.034303646791472804,
+                -0.047289254409695815,
+                -0.045774266854236446,
+                -0.03914073149001309,
+                -0.03733362190239155,
+                -0.03940005504082192,
+                -0.04934530894924794,
+                -0.05475597879017425,
+                -0.04923709555242936,
+                -0.04588248025105503,
+                -0.041986797965588095,
+                -0.03473650037874682,
+                -0.03192295206146524,
+                -0.03549399415647658,
+                -0.036490736439716474,
+                -0.039728771060758804,
+                -0.04345078091089768,
+                -0.042671926122985614,
+                -0.05403174020732031,
+                -0.06454300828670141,
+                -0.06816883819038842,
+                -0.06333335871642774
+              ],
+              "p25": [
+                -0.005117962801148379,
+                -0.007739358382224499,
+                -0.0034830202761537647,
+                -0.008583157109093142,
+                -0.011195422316208554,
+                -0.012108351017351127,
+                -0.012904014922178304,
+                -0.01672999748707368,
+                -0.014247530859496985,
+                -0.01609034350941594,
+                -0.032660427502075144,
+                -0.03141149130049225,
+                -0.035165738914568166,
+                -0.038523969267395326,
+                -0.037878787878787845,
+                -0.026939424517628187,
+                -0.021374185854508617,
+                -0.02516733804951223,
+                -0.0290722563679173,
+                -0.01713145582974028,
+                -0.015212671620340538,
+                -0.019029705835319568,
+                -0.03376257980738005,
+                -0.031057244886916895,
+                -0.030191537712368707,
+                -0.033979006601017214,
+                -0.03928146304512494,
+                -0.03441186018829123,
+                -0.026728709014175945,
+                -0.01785521047505672
+              ],
+              "p50": [
+                -0.0016171165567856133,
+                -0.00024878716258236124,
+                0.005220950801322069,
+                0.00871909290974029,
+                0.009084609468401903,
+                0.0016611295681063537,
+                -0.005551282734673025,
+                -0.004743477718137504,
+                -0.006366246411184685,
+                -0.0017475970540506874,
+                0.0036200224691050587,
+                0.007600236654075529,
+                0.008488328548246247,
+                0.009736612158282375,
+                0.005224530414230647,
+                0.004975743251648286,
+                0.006219679064560268,
+                0.008956337852966772,
+                0.010699272416793672,
+                0.00833436994651078,
+                0.010200273665878756,
+                0.01331011319815889,
+                0.015549197661400671,
+                0.016171165567856662,
+                0.023385993282746553,
+                0.024416329131206522,
+                0.03221793755442223,
+                0.03274473217130124,
+                0.029650025030719587,
+                0.02412051153688623
+              ],
+              "p75": [
+                0.0036505538771400585,
+                0.004620418901639389,
+                0.006671701913393771,
+                0.010621652647446923,
+                0.011260434822493365,
+                0.01009465526609284,
+                0.009020234248293357,
+                0.011969785483469107,
+                0.01225575305474645,
+                0.011271207559348543,
+                0.00991490422128987,
+                0.009179559038005195,
+                0.011651135904045618,
+                0.012151276566695563,
+                0.012482836100362002,
+                0.011847227952921568,
+                0.013514010368367056,
+                0.013731119710398131,
+                0.01845446684567427,
+                0.02532653711373048,
+                0.019722881038571942,
+                0.026962925976781883,
+                0.031082261889901323,
+                0.035825739608039,
+                0.03757333666208969,
+                0.03757333666208969,
+                0.03882162027212582,
+                0.04056921732617651,
+                0.039945075521158446,
+                0.03682436649606794
+              ],
+              "p90": [
+                0.004673527164876668,
+                0.010172939979654084,
+                0.012644099929670208,
+                0.012207527975584864,
+                0.016912512716174954,
+                0.02110184483194341,
+                0.02084912812736929,
+                0.02211271165024008,
+                0.024892595400555963,
+                0.02059641142279499,
+                0.024260803639120566,
+                0.02615617892342675,
+                0.029315137730603905,
+                0.03158958807177154,
+                0.03562437059415909,
+                0.03955016426585792,
+                0.04456193353474328,
+                0.04852160727824113,
+                0.05029062421026035,
+                0.05029062421026035,
+                0.05155420773313114,
+                0.053323224665150354,
+                0.05269143290371495,
+                0.049532474096537805,
+                0.05307050796057623,
+                0.05752769385699909,
+                0.061536517563811025,
+                0.05812484205205957,
+                0.05559767500631799,
+                0.055344958301743685
+              ]
+            },
+            "currentWindow": {
+              "raw": [
+                6460.26,
+                6415.54,
+                6448.26,
+                6502.08,
+                6481.5,
+                6495.15,
+                6512.61,
+                6532.04,
+                6587.47,
+                6584.29,
+                6615.28,
+                6606.76,
+                6600.35,
+                6631.96,
+                6664.36,
+                6693.75,
+                6656.92,
+                6637.97,
+                6604.72,
+                6643.7,
+                6661.21,
+                6688.46,
+                6711.2,
+                6715.35,
+                6715.79,
+                6740.28,
+                6714.59,
+                6753.72,
+                6735.11,
+                6552.51,
+                6654.72,
+                6644.31,
+                6671.06,
+                6629.07,
+                6664.01,
+                6735.13,
+                6735.35,
+                6699.4,
+                6738.44,
+                6791.69,
+                6875.16,
+                6890.89,
+                6890.59,
+                6822.34,
+                6840.2,
+                6851.97,
+                6771.55,
+                6796.29,
+                6720.32,
+                6728.8,
+                6832.43,
+                6846.61,
+                6850.92,
+                6737.49,
+                6734.11,
+                6672.41,
+                6617.32,
+                6642.16,
+                6538.76,
+                6602.99,
+                6705.12,
+                6765.88,
+                6812.61,
+                6849.09,
+                6812.63,
+                6829.37,
+                6849.72,
+                6857.12,
+                6870.4,
+                6846.51,
+                6840.51,
+                6886.68,
+                6901,
+                6827.41,
+                6816.51,
+                6800.26,
+                6721.43,
+                6774.76,
+                6834.5,
+                6878.49,
+                6909.79,
+                6932.05,
+                6929.94,
+                6905.74,
+                6896.24,
+                6845.5,
+                6858.47,
+                6902.05,
+                6944.82,
+                6920.93,
+                6921.46,
+                6966.28,
+                6977.27,
+                6963.74,
+                6926.6,
+                6944.47,
+                6940.01,
+                6796.86,
+                6875.62,
+                6913.35,
+                6915.61,
+                6950.23,
+                6978.6,
+                6978.03,
+                6969.01,
+                6939.03,
+                6976.44,
+                6917.81,
+                6882.72,
+                6798.4,
+                6932.3,
+                6964.82,
+                6941.81,
+                6941.47,
+                6832.76,
+                6836.17,
+                6843.22,
+                6881.31,
+                6861.89,
+                6909.51
+              ],
+              "normalized": [
+                0,
+                -0.006922322011807614,
+                -0.0018575103788392416,
+                0.006473423670254713,
+                0.003287793370545424,
+                0.005400711426475005,
+                0.008103389027686108,
+                0.011111007916090024,
+                0.01969115794101167,
+                0.019198917690619224,
+                0.023995938243971532,
+                0.022677105874995742,
+                0.02168488574763247,
+                0.026577877670558123,
+                0.03159315569342402,
+                0.03614250819626451,
+                0.03044149925854375,
+                0.027508180785293476,
+                0.022361329110593076,
+                0.028395141991189147,
+                0.031105559218978774,
+                0.03532365570425955,
+                0.03884363787215988,
+                0.0394860268781752,
+                0.039554135592065914,
+                0.04334500469021363,
+                0.03936838455418202,
+                0.04542541631451366,
+                0.04254472730199705,
+                0.01427961103732667,
+                0.030100955689089916,
+                0.0284895654354469,
+                0.03263026565494271,
+                0.026130527254320954,
+                0.03153897830737463,
+                0.04254782315262851,
+                0.042581877509573936,
+                0.037017085999634596,
+                0.043060186432124926,
+                0.05130288873822406,
+                0.06422342134836673,
+                0.06665830786996191,
+                0.0666118701104909,
+                0.056047279830842706,
+                0.05881187444468173,
+                0.06063378254125995,
+                0.04818536715240562,
+                0.05201493438344583,
+                0.040255345760077686,
+                0.041567986427790825,
+                0.05760913647438339,
+                0.059804094572045004,
+                0.06047125038311149,
+                0.04291313352713352,
+                0.04238993477042711,
+                0.03283923557256204,
+                0.024311715008374195,
+                0.028156761492571448,
+                0.012151213728240039,
+                0.022093538030977012,
+                0.03790249928021468,
+                0.04730769349840407,
+                0.05454114849866715,
+                0.06018798005033852,
+                0.054544244349298616,
+                0.057135471327779325,
+                0.060285499345227596,
+                0.061430964078845074,
+                0.0634866088980938,
+                0.05978861531888809,
+                0.05885986012946847,
+                0.06600663131205246,
+                0.06822326036413391,
+                0.05683207796590224,
+                0.05514483937178999,
+                0.05262946073377851,
+                0.04042716547012041,
+                0.048682251178745126,
+                0.05792955701473312,
+                0.0647388804784946,
+                0.06958388671663365,
+                0.07302956846938048,
+                0.07270295622776782,
+                0.06895697696377538,
+                0.06748644791386098,
+                0.05963227486200242,
+                0.061639933996464544,
+                0.06838579252228237,
+                0.0750062690975285,
+                0.0713082755183228,
+                0.07139031556005483,
+                0.07832811682501935,
+                0.08002928674697306,
+                0.07793494379483172,
+                0.07218594917232435,
+                0.07495209171147911,
+                0.07426171702067719,
+                0.05210316612644064,
+                0.0642946259128889,
+                0.0701349481290227,
+                0.07048477925037064,
+                0.07584369669332183,
+                0.08023516081396107,
+                0.08014692907096611,
+                0.07875070043620536,
+                0.07411002033973857,
+                0.07990080894576988,
+                0.07082532281982462,
+                0.06539365288703551,
+                0.05234154662505834,
+                0.07306826660227296,
+                0.07810211972892724,
+                0.0745403435775031,
+                0.0744877141167693,
+                0.057660218009801464,
+                0.05818806054245492,
+                0.059279347890023,
+                0.06517539541752192,
+                0.06216932445443374,
+                0.0695405448077941
+              ],
+              "timestamps": [
+                1756425600000,
+                1756771200000,
+                1756857600000,
+                1756944000000,
+                1757030400000,
+                1757289600000,
+                1757376000000,
+                1757462400000,
+                1757548800000,
+                1757635200000,
+                1757894400000,
+                1757980800000,
+                1758067200000,
+                1758153600000,
+                1758240000000,
+                1758499200000,
+                1758585600000,
+                1758672000000,
+                1758758400000,
+                1758844800000,
+                1759104000000,
+                1759190400000,
+                1759276800000,
+                1759363200000,
+                1759449600000,
+                1759708800000,
+                1759795200000,
+                1759881600000,
+                1759968000000,
+                1760054400000,
+                1760313600000,
+                1760400000000,
+                1760486400000,
+                1760572800000,
+                1760659200000,
+                1760918400000,
+                1761004800000,
+                1761091200000,
+                1761177600000,
+                1761264000000,
+                1761523200000,
+                1761609600000,
+                1761696000000,
+                1761782400000,
+                1761868800000,
+                1762128000000,
+                1762214400000,
+                1762300800000,
+                1762387200000,
+                1762473600000,
+                1762732800000,
+                1762819200000,
+                1762905600000,
+                1762992000000,
+                1763078400000,
+                1763337600000,
+                1763424000000,
+                1763510400000,
+                1763596800000,
+                1763683200000,
+                1763942400000,
+                1764028800000,
+                1764115200000,
+                1764288000000,
+                1764547200000,
+                1764633600000,
+                1764720000000,
+                1764806400000,
+                1764892800000,
+                1765152000000,
+                1765238400000,
+                1765324800000,
+                1765411200000,
+                1765497600000,
+                1765756800000,
+                1765843200000,
+                1765929600000,
+                1766016000000,
+                1766102400000,
+                1766361600000,
+                1766448000000,
+                1766534400000,
+                1766707200000,
+                1766966400000,
+                1767052800000,
+                1767139200000,
+                1767312000000,
+                1767571200000,
+                1767657600000,
+                1767744000000,
+                1767830400000,
+                1767916800000,
+                1768176000000,
+                1768262400000,
+                1768348800000,
+                1768435200000,
+                1768521600000,
+                1768867200000,
+                1768953600000,
+                1769040000000,
+                1769126400000,
+                1769385600000,
+                1769472000000,
+                1769558400000,
+                1769644800000,
+                1769731200000,
+                1769990400000,
+                1770076800000,
+                1770163200000,
+                1770249600000,
+                1770336000000,
+                1770595200000,
+                1770681600000,
+                1770768000000,
+                1770854400000,
+                1770940800000,
+                1771286400000,
+                1771372800000,
+                1771459200000,
+                1771545600000
+              ]
+            },
+            "forecast": {
+              "upperBand": [
+                6938.267660600312,
+                6960.617430561943,
+                6976.241362996335,
+                6988.379225903323,
+                7006.840631373953,
+                7017.286264696192,
+                7012.701329014132,
+                7027.256677385167,
+                7037.848442567699,
+                7019.604816016655,
+                7027.578697609293,
+                7031.586317400946,
+                7051.038438670675,
+                7060.623970814067,
+                7075.70861286393,
+                7087.075397754789,
+                7110.14815757899,
+                7124.577919827636,
+                7147.007447050945,
+                7170.748766169864,
+                7155.754878819485,
+                7186.878980360969,
+                7198.92759095672,
+                7204.401715586956,
+                7222.6622754293785,
+                7238.060760690974,
+                7256.222778479392,
+                7250.473795107258,
+                7239.586795098553,
+                7227.932435691863
+              ],
+              "lowerBand": [
+                6871.640750641726,
+                6836.233138367981,
+                6835.376816063912,
+                6832.3782467984,
+                6807.438602341065,
+                6779.823681955491,
+                6743.054437692924,
+                6741.799830056163,
+                6741.777576254424,
+                6690.549017190959,
+                6638.537347499061,
+                6665.769355553388,
+                6659.042470720805,
+                6640.301587401065,
+                6608.17211536286,
+                6627.272396945354,
+                6665.565322502975,
+                6664.050284977024,
+                6664.01837674605,
+                6730.3189189489485,
+                6746.667968407163,
+                6721.143974834842,
+                6666.802004428762,
+                6664.961657474688,
+                6655.093831524678,
+                6644.699806917088,
+                6587.135744497598,
+                6567.645173361677,
+                6581.662224307295,
+                6629.023384642874
+              ],
+              "confidenceDecay": [
+                1,
+                0.9666666666666667,
+                0.9333333333333333,
+                0.9,
+                0.8666666666666667,
+                0.8333333333333334,
+                0.8,
+                0.7666666666666666,
+                0.7333333333333334,
+                0.7,
+                0.6666666666666667,
+                0.6333333333333333,
+                0.6,
+                0.5666666666666667,
+                0.5333333333333333,
+                0.5,
+                0.4666666666666667,
+                0.43333333333333335,
+                0.4,
+                0.3666666666666667,
+                0.33333333333333337,
+                0.30000000000000004,
+                0.2666666666666667,
+                0.23333333333333328,
+                0.19999999999999996,
+                0.16666666666666663,
+                0.1333333333333333,
+                0.09999999999999998,
+                0.06666666666666665,
+                0.033333333333333326
+              ],
+              "tailFloor": 6700.583219185491,
+              "currentPrice": 6909.51
+            }
+          },
+          "cascade": {
+            "version": "SPX_CASCADE_V1.0",
+            "inputs": {
+              "dxy": {
+                "tacticalAction": "HOLD",
+                "tacticalConfidence01": 0.9627700106456749,
+                "regimeMode": "tactical",
+                "regimeBiasSigned": -0.018,
+                "guard": "NONE"
+              },
+              "ae": {
+                "regime": "NEUTRAL_MIXED",
+                "regimeConfidence01": 0.6000000000000001,
+                "transition": {
+                  "pStress1w": 0.02,
+                  "pStress4w": 0.06,
+                  "selfTransition": 0.9
+                },
+                "durations": {
+                  "stressMedianW": 4,
+                  "liquidityMedianW": 24,
+                  "currentMedianW": 10
+                },
+                "novelty": {
+                  "label": "KNOWN",
+                  "score": 0
+                },
+                "scenarios": {
+                  "base": 0.5,
+                  "bull": 0.25,
+                  "bear": 0.25
+                }
+              }
+            },
+            "overlay": {
+              "agreement": "NEUTRAL",
+              "riskMode": "NEUTRAL",
+              "guard": {
+                "level": "NONE",
+                "action": "NONE"
+              }
+            },
+            "multipliers": {
+              "sizeMultiplier": 0.928,
+              "confidenceMultiplier": 0.928,
+              "thresholdShift": 0,
+              "factors": {
+                "mStress": 0.928,
+                "mPersist": 1,
+                "mNovel": 1,
+                "mScenario": 1,
+                "mLiquidity": 1,
+                "guardCap": 1
+              }
+            },
+            "decisionAdjusted": {
+              "action": "BUY",
+              "confidenceOriginal": 0.38,
+              "confidenceAdjusted": 0.35264,
+              "sizeMultiplier": 0.928,
+              "finalExposure01": 0.32724992
+            },
+            "explain": {
+              "headline": "Favorable conditions \u2192 full SPX exposure",
+              "drivers": [
+                "pStress4w = 6.0%"
+              ],
+              "limits": [
+                "Direction not modified",
+                "Only exposure scaled"
+              ]
+            },
+            "computedAt": "2026-02-27T14:13:57.730Z"
+          },
+          "meta": {
+            "spxVersion": "SPX_V2.1.0",
+            "cascadeVersion": "SPX_CASCADE_V1.0",
+            "cascadeEnabled": true
+          }
+        },
+        "has_data": false
+      }
+    },
+    {
+      "test": "POST /api/macro-engine/DXY/backtest/run",
+      "passed": true,
+      "details": {
+        "status_code": 200,
+        "asset": "DXY",
+        "payload": {
+          "from": "2026-01-28",
+          "to": "2026-02-27",
+          "horizons": [
+            "30D"
+          ],
+          "stepDays": 7
+        },
+        "response": {
+          "ok": true,
+          "data": {
+            "asset": "DXY",
+            "params": {
+              "from": "2026-01-28",
+              "to": "2026-02-27",
+              "horizons": [
+                "30D"
+              ],
+              "stepDays": 7,
+              "totalSamples": 5
+            },
+            "metrics": {
+              "hitRateV1": 0,
+              "hitRateV2": 0,
+              "rmseV1": 0,
+              "rmseV2": 0,
+              "meanAbsErrorV1": 0,
+              "meanAbsErrorV2": 0,
+              "regimeStabilityScore": 0,
+              "macroDeltaAvg": 0,
+              "macroDeltaStd": 0,
+              "sharpeV1": 0,
+              "sharpeV2": 0
+            },
+            "winner": "NEUTRAL",
+            "recommendation": "INSUFFICIENT_DATA",
+            "details": {
+              "v1Predictions": [],
+              "v2Predictions": [],
+              "actualReturns": [],
+              "regimeSequence": []
+            },
+            "timestamp": "2026-02-27T14:13:57.875Z"
+          }
+        },
+        "winner": "NEUTRAL",
+        "recommendation": "INSUFFICIENT_DATA",
+        "total_samples": 5
+      }
+    }
+  ]
+}

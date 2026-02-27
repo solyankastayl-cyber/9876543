@@ -1,115 +1,562 @@
+/* Gilroy Font - loaded via public/fonts.css in index.html */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-    margin: 0;
-    font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-        sans-serif;
+/* ============================================
+   DESIGN SYSTEM - Flow Intel
+   Typography: Gilroy
+   ============================================ */
+
+@layer base {
+  :root {
+    /* Colors */
+    --background: 0 0% 100%;
+    --foreground: 220 13% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 13%;
+    --primary: 220 13% 13%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 13% 13%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 13% 13%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 220 13% 13%;
+    --radius: 0.5rem;
+    
+    /* Brand colors */
+    --brand-blue: 217 91% 60%;
+    --brand-green: 142 71% 45%;
+    --brand-red: 0 84% 60%;
+    --brand-orange: 25 95% 53%;
+    --brand-purple: 262 83% 58%;
+    
+    /* Typography Scale */
+    --font-family: 'Gilroy', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    
+    /* Font Sizes - Unified Scale */
+    --text-page-title: 28px;      /* Page titles */
+    --text-section-title: 18px;   /* Section headings */
+    --text-card-title: 14px;      /* Card headers */
+    --text-body: 14px;            /* Body text */
+    --text-small: 12px;           /* Hints, labels */
+    --text-tiny: 10px;            /* Badges, micro text */
+    
+    /* Font Weights */
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-semibold: 600;
+    --weight-bold: 700;
+    
+    /* Spacing Scale */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    font-size: 14px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-family);
+    font-weight: var(--weight-regular);
+    line-height: 1.5;
+  }
+  
+  /* Headings */
+  h1, .h1 {
+    font-family: var(--font-family);
+    font-size: var(--text-page-title);
+    font-weight: var(--weight-bold);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  
+  h2, .h2 {
+    font-family: var(--font-family);
+    font-size: var(--text-section-title);
+    font-weight: var(--weight-semibold);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  
+  h3, .h3 {
+    font-family: var(--font-family);
+    font-size: var(--text-card-title);
+    font-weight: var(--weight-semibold);
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  
+  p, .body {
+    font-family: var(--font-family);
+    font-size: var(--text-body);
+    font-weight: var(--weight-medium);
+    line-height: 1.5;
+  }
+  
+  small, .small {
+    font-family: var(--font-family);
+    font-size: var(--text-small);
+    font-weight: var(--weight-regular);
+    line-height: 1.4;
+  }
+  
+  code, pre, .mono {
+    font-family: var(--font-mono);
+  }
 }
 
-code {
-    font-family:
-        source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+/* ============================================
+   TYPOGRAPHY UTILITY CLASSES
+   ============================================ */
+
+@layer components {
+  /* Page Title - 28px Bold */
+  .text-page-title {
+    font-family: var(--font-family);
+    font-size: var(--text-page-title);
+    font-weight: var(--weight-bold);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    @apply text-gray-900;
+  }
+  
+  /* Section Title - 18px Semibold */
+  .text-section-title {
+    font-family: var(--font-family);
+    font-size: var(--text-section-title);
+    font-weight: var(--weight-semibold);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    @apply text-gray-900;
+  }
+  
+  /* Card Title - 14px Semibold Uppercase */
+  .text-card-title {
+    font-family: var(--font-family);
+    font-size: var(--text-card-title);
+    font-weight: var(--weight-semibold);
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    @apply text-gray-700;
+  }
+  
+  /* Body Text - 14px Medium */
+  .text-body {
+    font-family: var(--font-family);
+    font-size: var(--text-body);
+    font-weight: var(--weight-medium);
+    line-height: 1.5;
+    @apply text-gray-900;
+  }
+  
+  /* Hint/Label - 12px Regular */
+  .text-hint {
+    font-family: var(--font-family);
+    font-size: var(--text-small);
+    font-weight: var(--weight-regular);
+    line-height: 1.4;
+    @apply text-gray-500;
+  }
+  
+  /* Description - 14px Regular */
+  .text-description {
+    font-family: var(--font-family);
+    font-size: var(--text-body);
+    font-weight: var(--weight-regular);
+    line-height: 1.5;
+    @apply text-gray-500;
+  }
+  
+  /* Value/Number Large - 24px Bold */
+  .text-value-lg {
+    font-family: var(--font-family);
+    font-size: 24px;
+    font-weight: var(--weight-bold);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    @apply text-gray-900;
+  }
+  
+  /* Value/Number Medium - 20px Bold */
+  .text-value-md {
+    font-family: var(--font-family);
+    font-size: 20px;
+    font-weight: var(--weight-bold);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    @apply text-gray-900;
+  }
+  
+  /* Value/Number Small - 16px Bold */
+  .text-value-sm {
+    font-family: var(--font-family);
+    font-size: 16px;
+    font-weight: var(--weight-bold);
+    line-height: 1.3;
+    @apply text-gray-900;
+  }
+  
+  /* Badge Text - 10px Bold */
+  .text-badge {
+    font-family: var(--font-family);
+    font-size: var(--text-tiny);
+    font-weight: var(--weight-bold);
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  
+  /* Change Positive */
+  .text-change-positive {
+    font-family: var(--font-family);
+    font-size: var(--text-small);
+    font-weight: var(--weight-semibold);
+    @apply text-emerald-600;
+  }
+  
+  /* Change Negative */
+  .text-change-negative {
+    font-family: var(--font-family);
+    font-size: var(--text-small);
+    font-weight: var(--weight-semibold);
+    @apply text-red-600;
+  }
+  
+  /* Table Header */
+  .text-table-header {
+    font-family: var(--font-family);
+    font-size: var(--text-small);
+    font-weight: var(--weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    @apply text-gray-500;
+  }
+  
+  /* Navigation Item */
+  .text-nav {
+    font-family: var(--font-family);
+    font-size: var(--text-body);
+    font-weight: var(--weight-medium);
+    @apply text-gray-600;
+  }
+  
+  .text-nav-active {
+    font-family: var(--font-family);
+    font-size: var(--text-body);
+    font-weight: var(--weight-semibold);
+    @apply text-gray-900;
+  }
 }
 
+/* ============================================
+   GLASS CARD COMPONENT
+   ============================================ */
+
+@layer components {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
+  
+  .glass-card-hover:hover {
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* ============================================
+   NAVIGATION STYLES
+   ============================================ */
+
+@layer components {
+  .nav-link {
+    @apply px-4 py-2 text-nav rounded-lg transition-all duration-200;
+  }
+  
+  .nav-link:hover {
+    @apply bg-gray-100/50 text-gray-900;
+  }
+  
+  .nav-link-active {
+    @apply bg-gray-900 text-white font-semibold;
+  }
+}
+
+/* ============================================
+   PAGE HEADER COMPONENT
+   ============================================ */
+
+@layer components {
+  .page-header {
+    @apply mb-6;
+  }
+  
+  .page-header-title {
+    @apply text-page-title mb-1;
+  }
+  
+  .page-header-description {
+    @apply text-description;
+  }
+}
+
+/* ============================================
+   SECTION COMPONENT
+   ============================================ */
+
+@layer components {
+  .section {
+    @apply mb-8;
+  }
+  
+  .section-header {
+    @apply flex items-center justify-between mb-4;
+  }
+  
+  .section-title {
+    @apply text-section-title;
+  }
+  
+  .section-description {
+    @apply text-hint mt-1;
+  }
+}
+
+/* ============================================
+   CARD STYLES
+   ============================================ */
+
+@layer components {
+  .card {
+    @apply glass-card p-4;
+  }
+  
+  .card-header {
+    @apply flex items-center justify-between mb-4;
+  }
+  
+  .card-title {
+    @apply text-card-title;
+  }
+}
+
+/* ============================================
+   STAT COMPONENT
+   ============================================ */
+
+@layer components {
+  .stat {
+    @apply flex flex-col;
+  }
+  
+  .stat-label {
+    @apply text-hint mb-1;
+  }
+  
+  .stat-value {
+    @apply text-value-lg;
+  }
+  
+  .stat-change {
+    @apply text-change-positive mt-0.5;
+  }
+  
+  .stat-change-negative {
+    @apply text-change-negative;
+  }
+}
+
+/* ============================================
+   BADGE COMPONENT
+   ============================================ */
+
+@layer components {
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-badge;
+  }
+  
+  .badge-blue {
+    @apply bg-blue-100 text-blue-700;
+  }
+  
+  .badge-green {
+    @apply bg-emerald-100 text-emerald-700;
+  }
+  
+  .badge-red {
+    @apply bg-red-100 text-red-700;
+  }
+  
+  .badge-orange {
+    @apply bg-orange-100 text-orange-700;
+  }
+  
+  .badge-purple {
+    @apply bg-purple-100 text-purple-700;
+  }
+  
+  .badge-gray {
+    @apply bg-gray-100 text-gray-700;
+  }
+}
+
+/* ============================================
+   BUTTON STYLES
+   ============================================ */
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-500 text-white hover:bg-blue-600;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-100 text-gray-700 hover:bg-gray-200;
+  }
+  
+  .btn-ghost {
+    @apply text-gray-600 hover:bg-gray-100 hover:text-gray-900;
+  }
+  
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+}
+
+/* ============================================
+   TAB BUTTON
+   ============================================ */
+
+@layer components {
+  .tab-btn {
+    @apply px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors;
+  }
+  
+  .tab-btn-inactive {
+    @apply bg-gray-100 text-gray-600 hover:bg-gray-200;
+  }
+  
+  .tab-btn-active {
+    @apply bg-blue-500 text-white;
+  }
+}
+
+/* ============================================
+   TABLE STYLES
+   ============================================ */
+
+@layer components {
+  .table-header {
+    @apply text-table-header py-2 px-3 text-left;
+  }
+  
+  .table-cell {
+    @apply py-3 px-3 text-body border-b border-gray-50;
+  }
+  
+  .table-row:hover .table-cell {
+    @apply bg-gray-50/50;
+  }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { 
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Debug wrapper */
 @layer base {
-    :root {
-        --background: 0 0% 100%;
-        --foreground: 0 0% 3.9%;
-        --card: 0 0% 100%;
-        --card-foreground: 0 0% 3.9%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 3.9%;
-        --primary: 0 0% 9%;
-        --primary-foreground: 0 0% 98%;
-        --secondary: 0 0% 96.1%;
-        --secondary-foreground: 0 0% 9%;
-        --muted: 0 0% 96.1%;
-        --muted-foreground: 0 0% 45.1%;
-        --accent: 0 0% 96.1%;
-        --accent-foreground: 0 0% 9%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 89.8%;
-        --input: 0 0% 89.8%;
-        --ring: 0 0% 3.9%;
-        --chart-1: 12 76% 61%;
-        --chart-2: 173 58% 39%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
-        --radius: 0.5rem;
-    }
-    .dark {
-        --background: 0 0% 3.9%;
-        --foreground: 0 0% 98%;
-        --card: 0 0% 3.9%;
-        --card-foreground: 0 0% 98%;
-        --popover: 0 0% 3.9%;
-        --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 0 0% 9%;
-        --secondary: 0 0% 14.9%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 0 0% 14.9%;
-        --muted-foreground: 0 0% 63.9%;
-        --accent: 0 0% 14.9%;
-        --accent-foreground: 0 0% 98%;
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 14.9%;
-        --input: 0 0% 14.9%;
-        --ring: 0 0% 83.1%;
-        --chart-1: 220 70% 50%;
-        --chart-2: 160 60% 45%;
-        --chart-3: 30 80% 55%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
-    }
-}
-
-@layer base {
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply bg-background text-foreground;
-    }
-}
-
-@layer base {
-    [data-debug-wrapper="true"] {
-        display: contents !important;
-    }
-
-    [data-debug-wrapper="true"] > * {
-        margin-left: inherit;
-        margin-right: inherit;
-        margin-top: inherit;
-        margin-bottom: inherit;
-        padding-left: inherit;
-        padding-right: inherit;
-        padding-top: inherit;
-        padding-bottom: inherit;
-        column-gap: inherit;
-        row-gap: inherit;
-        gap: inherit;
-        border-left-width: inherit;
-        border-right-width: inherit;
-        border-top-width: inherit;
-        border-bottom-width: inherit;
-        border-left-style: inherit;
-        border-right-style: inherit;
-        border-top-style: inherit;
-        border-bottom-style: inherit;
-        border-left-color: inherit;
-        border-right-color: inherit;
-        border-top-color: inherit;
-        border-bottom-color: inherit;
-    }
+  [data-debug-wrapper="true"] {
+    display: contents !important;
+  }
 }

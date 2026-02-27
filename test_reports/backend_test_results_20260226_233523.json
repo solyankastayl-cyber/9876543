@@ -1,0 +1,103 @@
+{
+  "total_tests": 8,
+  "passed_tests": 8,
+  "failed_tests": 0,
+  "success_rate": 100.0,
+  "details": [
+    {
+      "name": "Health Check - Proxy and TS Backend",
+      "success": true,
+      "details": {
+        "status_code": 200,
+        "response_size": 118,
+        "has_data": true,
+        "proxy_status": "ok",
+        "ts_backend_status": true
+      },
+      "timestamp": "2026-02-26T23:35:20.682752"
+    },
+    {
+      "name": "DXY Terminal - All 4 Paths (Synthetic, Replay, Hybrid, Macro)",
+      "success": true,
+      "details": {
+        "status_code": 200,
+        "response_size": 27521,
+        "has_data": true,
+        "paths_count": 0,
+        "has_synthetic": false,
+        "has_replay": false,
+        "has_hybrid": false,
+        "has_macro": false
+      },
+      "timestamp": "2026-02-26T23:35:21.435147"
+    },
+    {
+      "name": "SPX Terminal Data",
+      "success": true,
+      "details": {
+        "status_code": 200,
+        "response_size": 29026,
+        "has_data": true,
+        "has_candles": true,
+        "data_points": 11
+      },
+      "timestamp": "2026-02-26T23:35:21.918972"
+    },
+    {
+      "name": "Bitcoin Terminal Data",
+      "success": true,
+      "details": {
+        "status_code": 200,
+        "response_size": 41122,
+        "has_data": true,
+        "has_candles": false,
+        "data_points": 0
+      },
+      "timestamp": "2026-02-26T23:35:22.262563"
+    },
+    {
+      "name": "System Health Status",
+      "success": true,
+      "details": {
+        "status_code": 200,
+        "response_size": 104,
+        "has_data": true,
+        "proxy_status": "healthy",
+        "ts_backend_status": null
+      },
+      "timestamp": "2026-02-26T23:35:22.392907"
+    },
+    {
+      "name": "Fractal Module Health",
+      "success": true,
+      "details": {
+        "status_code": 200,
+        "response_size": 338,
+        "has_data": true,
+        "proxy_status": null,
+        "ts_backend_status": null
+      },
+      "timestamp": "2026-02-26T23:35:22.620474"
+    },
+    {
+      "name": "AE Terminal - Macro Context",
+      "success": true,
+      "details": {
+        "status_code": 200,
+        "response_size": 2611,
+        "has_data": true
+      },
+      "timestamp": "2026-02-26T23:35:23.269691"
+    },
+    {
+      "name": "DXY Macro Data",
+      "success": true,
+      "details": {
+        "status_code": 200,
+        "response_size": 1381,
+        "has_data": true
+      },
+      "timestamp": "2026-02-26T23:35:23.716813"
+    }
+  ]
+}

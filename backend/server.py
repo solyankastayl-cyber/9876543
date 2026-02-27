@@ -1,15 +1,20 @@
-from fastapi import FastAPI, APIRouter
-from dotenv import load_dotenv
+"""
+Fractal Platform API - Python Proxy to TypeScript Backend
+Forwards all /api/* requests to TypeScript Fractal backend running on port 8002
+"""
+from fastapi import FastAPI, Request, Response, WebSocket
+from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+from dotenv import load_dotenv
 import os
+import httpx
+import asyncio
+import subprocess
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
-import uuid
-from datetime import datetime, timezone
-
+from contextlib import asynccontextmanager
+import websockets
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -19,71 +24,194 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
+TS_BACKEND_URL = "http://127.0.0.1:8002"
+ts_process = None
 
-# Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
+async def start_ts_backend():
+    """Start TypeScript backend as subprocess"""
+    global ts_process
+    logger.info("Starting TypeScript Fractal backend on port 8002...")
     
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class StatusCheckCreate(BaseModel):
-    client_name: str
-
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
+    env = os.environ.copy()
+    env["PORT"] = "8002"
     
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
+    ts_process = subprocess.Popen(
+        ["npx", "tsx", "src/app.fractal.ts"],
+        cwd="/app/backend",
+        env=env,
+        stdout=open("/var/log/supervisor/ts_fractal.log", "w"),
+        stderr=subprocess.STDOUT
+    )
     
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+    # Wait for TS backend to be ready (max 45 seconds)
+    for i in range(45):
+        await asyncio.sleep(1)
+        try:
+            async with httpx.AsyncClient(timeout=2.0) as http_client:
+                resp = await http_client.get(f"{TS_BACKEND_URL}/api/health")
+                if resp.status_code == 200:
+                    logger.info(f"TypeScript backend ready after {i+1}s")
+                    return True
+        except:
+            if i % 10 == 9:
+                logger.info(f"Still waiting for TS backend... ({i+1}s)")
+    
+    logger.warning("TypeScript backend may not be fully ready")
+    return False
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await start_ts_backend()
+    yield
+    # Shutdown
+    global ts_process
+    if ts_process:
+        ts_process.terminate()
+        try:
+            ts_process.wait(timeout=5)
+        except:
+            ts_process.kill()
+    client.close()
 
-# Include the router in the main app
-app.include_router(api_router)
+app = FastAPI(title="Fractal Platform", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# Direct health endpoint
+@app.get("/api/health")
+async def health():
+    ts_status = None
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as http_client:
+            resp = await http_client.get(f"{TS_BACKEND_URL}/api/health")
+            ts_status = resp.json() if resp.status_code == 200 else {"error": resp.status_code}
+    except Exception as e:
+        ts_status = {"error": str(e)}
+    
+    return {
+        "status": "ok",
+        "proxy": "python",
+        "ts_backend": ts_status
+    }
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
+# Proxy all API routes to TypeScript
+@app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+async def proxy_api(path: str, request: Request):
+    url = f"{TS_BACKEND_URL}/api/{path}"
+    
+    # Add query params
+    if request.query_params:
+        url = f"{url}?{request.query_params}"
+    
+    # Get headers
+    headers = {k: v for k, v in request.headers.items() 
+               if k.lower() not in ('host', 'content-length', 'transfer-encoding')}
+    
+    # Get body
+    body = None
+    if request.method in ("POST", "PUT", "PATCH"):
+        body = await request.body()
+    
+    try:
+        async with httpx.AsyncClient(timeout=300.0) as http_client:
+            response = await http_client.request(
+                method=request.method,
+                url=url,
+                headers=headers,
+                content=body
+            )
+            
+            # Filter response headers
+            resp_headers = {}
+            for k, v in response.headers.items():
+                if k.lower() not in ('content-encoding', 'transfer-encoding', 'content-length'):
+                    resp_headers[k] = v
+            
+            return Response(
+                content=response.content,
+                status_code=response.status_code,
+                headers=resp_headers,
+                media_type=response.headers.get('content-type')
+            )
+    except httpx.ConnectError:
+        return JSONResponse(
+            {"error": "TypeScript backend unavailable", "url": url},
+            status_code=503
+        )
+    except Exception as e:
+        return JSONResponse(
+            {"error": "Proxy error", "detail": str(e)},
+            status_code=500
+        )
+
+# WebSocket proxy to TypeScript backend
+@app.websocket("/api/ws")
+async def websocket_proxy_api(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        async with websockets.connect(f"ws://127.0.0.1:8002/api/ws") as ws_backend:
+            async def forward_to_backend():
+                try:
+                    async for message in websocket.iter_text():
+                        await ws_backend.send(message)
+                except Exception:
+                    pass
+                    
+            async def forward_to_client():
+                try:
+                    async for message in ws_backend:
+                        await websocket.send_text(message)
+                except Exception:
+                    pass
+            
+            await asyncio.gather(forward_to_backend(), forward_to_client())
+    except Exception as e:
+        logger.warning(f"WebSocket proxy error: {e}")
+    finally:
+        try:
+            await websocket.close()
+        except:
+            pass
+
+@app.websocket("/ws")
+async def websocket_proxy_root(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        async with websockets.connect(f"ws://127.0.0.1:8002/ws") as ws_backend:
+            async def forward_to_backend():
+                try:
+                    async for message in websocket.iter_text():
+                        await ws_backend.send(message)
+                except Exception:
+                    pass
+                    
+            async def forward_to_client():
+                try:
+                    async for message in ws_backend:
+                        await websocket.send_text(message)
+                except Exception:
+                    pass
+            
+            await asyncio.gather(forward_to_backend(), forward_to_client())
+    except Exception as e:
+        logger.warning(f"WebSocket proxy error: {e}")
+    finally:
+        try:
+            await websocket.close()
+        except:
+            pass
+
+# Root redirect
+@app.get("/")
+async def root():
+    return {"message": "Fractal Platform API", "docs": "/docs"}

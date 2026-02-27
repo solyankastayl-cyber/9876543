@@ -1,0 +1,67 @@
+.hoverTipWrap {
+  position: relative;
+  display: inline-block;
+}
+
+.hoverTipBubble {
+  position: absolute;
+  left: 0;
+  min-width: 220px;
+  max-width: 360px;
+  background: #fff;
+  color: #111;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.14s ease, transform 0.14s ease;
+  z-index: 50;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.hoverTipBubble--bottom {
+  top: 110%;
+  transform: translateY(-4px);
+}
+
+.hoverTipBubble--top {
+  bottom: 110%;
+  top: auto;
+  transform: translateY(4px);
+}
+
+.hoverTipBubble--right {
+  left: 110%;
+  top: 50%;
+  transform: translate(-4px, -50%);
+}
+
+.hoverTipWrap:hover .hoverTipBubble {
+  opacity: 1;
+}
+
+.hoverTipWrap:hover .hoverTipBubble--bottom {
+  transform: translateY(0);
+}
+
+.hoverTipWrap:hover .hoverTipBubble--top {
+  transform: translateY(0);
+}
+
+.hoverTipWrap:hover .hoverTipBubble--right {
+  transform: translate(0, -50%);
+}
+
+/* Dark mode variant */
+@media (prefers-color-scheme: dark) {
+  .hoverTipBubble {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.3);
+  }
+}

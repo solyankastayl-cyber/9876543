@@ -1,0 +1,57 @@
+{
+  "summary": "Completed comprehensive testing of DXY Macro module implementation. Backend APIs are fully functional (100% success rate). Frontend DXY Fractal page accessible but DxyMacroTab component integration incomplete.",
+
+  "backend_issues": {
+    "critical_bugs": [],
+    "flaky_endpoints": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "DxyMacroTab",
+        "issue": "DxyMacroTab component not fully integrated in Macro tab - only 3/9 expected elements found",
+        "affected_elements": ["DXY Macro Score", "Guard Level", "Key Macro Drivers", "Score (Signed)", "Δ End Return", "What Would Change"],
+        "fix_priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "DXY Fractal Macro Tab",
+        "issue": "Current Macro tab shows hybrid projection interface instead of DxyMacroTab component",
+        "affected_selectors": [".dxyMacroTab", ".dxyMacroGrid", ".dxyMacroCard"]
+      },
+      {
+        "flow": "HoverTip functionality", 
+        "issue": "HoverTip components not found or not properly integrated in Macro tab",
+        "affected_selectors": [".hoverTipWrap", ".hoverTipBubble"]
+      }
+    ]
+  },
+
+  "passed_tests": [
+    "Backend: GET /api/dxy-macro-core/decomposition returns component weights",
+    "Backend: GET /api/dxy-macro-core/guard/current returns guard level", 
+    "Backend: GET /api/fractal/dxy/terminal?focus=30d returns macro with path and adjustment",
+    "Backend: GET /api/dxy-macro-core/score/evidence returns score with evidence",
+    "Backend: GET /api/liquidity/state returns liquidity regime",
+    "Frontend: DXY Fractal page loads successfully at /dxy route",
+    "Frontend: Macro tab exists and is clickable",
+    "Frontend: Macro path displayed on chart (Macro + Hybrid paths visible)",
+    "Component files exist: DxyMacroTab.jsx and HoverTip.jsx"
+  ],
+
+  "test_report_links": ["/app/backend_test.py", "/app/test_reports/backend_test_results_20260227_073656.json"],
+
+  "action_item_for_main_agent": "DxyMacroTab component needs proper integration into DXY Fractal Macro tab. Current Macro tab shows different interface. Ensure DxyMacroTab.jsx is imported and used in the DXY Fractal page routing.",
+
+  "updated_files": ["/app/backend_test.py"],
+
+  "success_percentage": {
+    "backend": "100% (5/5 endpoints working)",
+    "frontend": "60% (DXY page accessible, Macro tab exists, but DxyMacroTab component not fully integrated)"
+  },
+
+  "should_call_test_agent_after_fix": "false",
+  "should_main_agent_test_itself": "true"
+}

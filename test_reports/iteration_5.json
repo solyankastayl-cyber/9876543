@@ -1,0 +1,90 @@
+{
+  "summary": "V2 Macro Engine volScale feature and MacroLayerPanel refactoring tested. Backend: 13/13 tests passed (100%). Frontend: All components verified - V2 badge, CALIBRATED badge, volScale badge (Vol x0.929), Regime State card, Guard card, Macro Impact card, and Drivers card all rendering correctly.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "/dxy page",
+        "issues": ["WebSocket connection errors shown in console (non-blocking) - expected behavior for preview env"]
+      }
+    ]
+  },
+
+  "passed_tests": [
+    "GET /api/macro-engine/v2/DXY/pack — volScale field present (value: 0.929)",
+    "GET /api/macro-engine/v2/DXY/pack — regime, drivers, guard, overlay, meta all present",
+    "GET /api/macro-engine/v2/DXY/pack — regime state data (NEUTRAL, confidence 48%, persistence 50%)",
+    "GET /api/macro-engine/v2/DXY/pack — guard card data (SOFT, GOLD_FLIGHT_TO_QUALITY, GOLD_ELEVATED)",
+    "GET /api/macro-engine/v2/DXY/pack — macro impact data (hybridBase, delta, adjusted)",
+    "GET /api/macro-engine/v2/DXY/pack — drivers card data (FEDFUNDS, CREDIT, GOLD, etc.)",
+    "GET /api/macro-engine/v2/state/current — returns NEUTRAL regime with confidence and persistence",
+    "GET /api/macro-engine/v2/calibration/weights — returns calibrated weights",
+    "GET /api/macro-engine/DXY/compare — V2 has volScale, V1 does not",
+    "GET /api/macro-engine/v2/DXY/pack — weightsSource field shows 'calibrated'",
+    "GET /api/macro-engine/v2/DXY/pack — engineVersion: v2",
+    "GET /api/macro-engine/v1/DXY/pack — engineVersion: v1",
+    "GET /api/macro-engine/DXY/compare — both V1 and V2 engines identified correctly",
+    "Frontend: /dxy page shows Macro Layer panel with V2 badge",
+    "Frontend: /dxy page shows CALIBRATED badge when weights are calibrated",
+    "Frontend: /dxy page shows volScale badge (Vol x0.929)",
+    "Frontend: /dxy page shows Regime State card with NEUTRAL, 48% confidence, 50% persistence",
+    "Frontend: /dxy page shows Guard Level card with SOFT, reason codes (GOLD_FLIGHT_TO_QUALITY, GOLD_ELEVATED)",
+    "Frontend: /dxy page shows Macro Impact card with Hybrid Base, Macro Delta, Adjusted",
+    "Frontend: /dxy page shows Top Drivers card with FEDFUNDS, CREDIT, GOLD, HOUSING, ACTIVITY"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_v2_volscale.py",
+    "/app/test_reports/pytest/pytest_results_volscale.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "volScale computation in V2 engine correctly uses DXY price data from CSV file",
+    "MacroLayerPanel correctly fetches V2 API directly (/api/macro-engine/v2/DXY/pack)",
+    "All data-testid attributes properly applied for testing",
+    "Conditional rendering of badges works correctly (calibrated badge only shows when weightsSource=calibrated, volScale badge only shows when volScale != 1)"
+  ],
+
+  "updated_files": [
+    "/app/backend/tests/test_v2_volscale.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (13/13 tests passed)",
+    "frontend": "100% (all components verified)"
+  },
+
+  "seed_data_creation": "No seed data needed - uses real FRED data and MongoDB state",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "V2 Macro Engine volScale feature fully implemented and tested. MacroLayerPanel refactored to use unified V2 API. All 4 cards (Regime State, Guard Level, Macro Impact, Top Drivers) and 3 badges (V2, CALIBRATED, Vol x0.929) working correctly. Previous iteration_4 covered state/calibration endpoints - this iteration verified volScale addition.",
+
+  "verified_features": {
+    "volScale": {
+      "value": 0.929,
+      "location": "meta.stateInfo.volScale",
+      "computation": "DXY realized vol / long-term vol ratio from dxy_stooq.csv"
+    },
+    "macroLayerPanel": {
+      "badges": ["V2", "CALIBRATED", "Vol x0.929"],
+      "cards": ["Regime State", "Guard Level", "Macro Impact (30D)", "Top Drivers"]
+    },
+    "api_endpoints_tested": [
+      "GET /api/macro-engine/v2/DXY/pack",
+      "GET /api/macro-engine/v2/state/current",
+      "GET /api/macro-engine/v2/calibration/weights",
+      "GET /api/macro-engine/DXY/compare",
+      "GET /api/macro-engine/v1/DXY/pack"
+    ]
+  }
+}

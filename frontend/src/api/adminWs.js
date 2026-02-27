@@ -1,0 +1,103 @@
+/**
+ * Admin WebSocket - STEP 0.5
+ * 
+ * Event bus для real-time updates.
+ * Только события, без тяжёлых payload.
+ */
+
+// Event types from backend
+export const ADMIN_EVENTS = {
+  ML_STATUS_CHANGED: 'ML_STATUS_CHANGED',
+  RETRAIN_STARTED: 'RETRAIN_STARTED',
+  RETRAIN_FINISHED: 'RETRAIN_FINISHED',
+  PROVIDER_COOLDOWN: 'PROVIDER_COOLDOWN',
+  DRIFT_DETECTED: 'DRIFT_DETECTED',
+  SETTINGS_CHANGED: 'SETTINGS_CHANGED',
+  CIRCUIT_BREAKER_OPENED: 'CIRCUIT_BREAKER_OPENED',
+  CIRCUIT_BREAKER_CLOSED: 'CIRCUIT_BREAKER_CLOSED',
+};
+
+/**
+ * Connect to Admin WebSocket
+ * @param {function} onEvent - Callback for events
+ * @returns {function} Cleanup function
+ */
+export function connectAdminWS(onEvent) {
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const host = window.location.host;
+  const wsUrl = `${protocol}//${host}/ws/admin`;
+  
+  let ws = null;
+  let reconnectTimeout = null;
+  let pingInterval = null;
+  
+  function connect() {
+    try {
+      ws = new WebSocket(wsUrl);
+      
+      ws.onopen = () => {
+        console.log('[AdminWS] Connected');
+        // Start ping interval
+        pingInterval = setInterval(() => {
+          if (ws?.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'ping' }));
+          }
+        }, 30000);
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          // Ignore pong and connected messages
+          if (data.type === 'pong' || data.type === 'connected') {
+            return;
+          }
+          
+          // Emit event to callback
+          if (data.type && onEvent) {
+            onEvent(data.type, data.meta);
+          }
+        } catch (err) {
+          console.error('[AdminWS] Parse error:', err);
+        }
+      };
+      
+      ws.onclose = () => {
+        console.log('[AdminWS] Disconnected');
+        cleanup();
+        // Reconnect after 5 seconds
+        reconnectTimeout = setTimeout(connect, 5000);
+      };
+      
+      ws.onerror = (err) => {
+        console.error('[AdminWS] Error:', err);
+      };
+      
+    } catch (err) {
+      console.error('[AdminWS] Connection failed:', err);
+      reconnectTimeout = setTimeout(connect, 5000);
+    }
+  }
+  
+  function cleanup() {
+    if (pingInterval) {
+      clearInterval(pingInterval);
+      pingInterval = null;
+    }
+  }
+  
+  // Initial connect
+  connect();
+  
+  // Return cleanup function
+  return () => {
+    cleanup();
+    if (reconnectTimeout) {
+      clearTimeout(reconnectTimeout);
+    }
+    if (ws) {
+      ws.close();
+    }
+  };
+}

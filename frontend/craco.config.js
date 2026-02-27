@@ -9,7 +9,7 @@ const isDevServer = process.env.NODE_ENV !== "production";
 // Environment variable overrides
 const config = {
   enableHealthCheck: process.env.ENABLE_HEALTH_CHECK === "true",
-  enableVisualEdits: isDevServer, // Only enable during dev server
+  enableVisualEdits: false, // DISABLED - causes babel errors
 };
 
 // Conditionally load visual edits modules only in dev mode
@@ -47,6 +47,15 @@ const webpackConfig = {
       '@': path.resolve(__dirname, 'src'),
     },
     configure: (webpackConfig) => {
+
+      // Ensure node_modules are resolved correctly
+      webpackConfig.resolve = {
+        ...webpackConfig.resolve,
+        modules: [
+          path.resolve(__dirname, 'node_modules'),
+          'node_modules'
+        ],
+      };
 
       // Add ignored patterns to reduce watched directories
         webpackConfig.watchOptions = {

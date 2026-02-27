@@ -1,0 +1,96 @@
+{
+  "summary": "Completed comprehensive backend testing of V2 Macro Engine with RegimeStateService and RollingCalibrationService. All 20 pytest tests passed (100% success rate). V2 features including Markov chains, hysteresis, DB-backed state, rolling correlation calibration, and gold as exogenous signal are all working correctly.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/macro-engine/admin/reset",
+        "issue": "Returns 400 error when Content-Type: application/json header is set with empty body. Works correctly when called without Content-Type header.",
+        "priority": "LOW"
+      }
+    ]
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "GET /api/macro-engine/v2/health — returns ok:true with issues:[] and warnings array",
+    "GET /api/macro-engine/v2/DXY/pack — returns valid V2 pack with engineVersion:v2",
+    "V2 pack contains stateInfo (entropy, changeCount30D, weightsSource:calibrated)",
+    "V2 pack contains goldSignal in internals",
+    "GET /api/macro-engine/v2/state/current — returns current regime state from MongoDB",
+    "GET /api/macro-engine/v2/state/history?limit=5 — returns regime state history",
+    "GET /api/macro-engine/v2/calibration/weights — returns calibrated weights with source:calibrated",
+    "Calibrated weights include components with corr/lag/weight fields",
+    "GET /api/macro-engine/v2/calibration/history — returns weights history",
+    "POST /api/macro-engine/v2/calibration/run — triggers recalibration successfully",
+    "GET /api/macro-engine/status — returns router status with activeEngine and v2Readiness",
+    "POST /api/macro-engine/admin/force-engine with {version:'v2'} — forces V2 engine",
+    "POST /api/macro-engine/admin/reset — resets to defaults",
+    "GET /api/macro-engine/v1/DXY/pack — returns V1 pack (no stateInfo)",
+    "GET /api/macro-engine/DXY/compare — compares V1 vs V2 packs",
+    "Hysteresis test: two consecutive V2 pack calls maintain stable regime (no flip-flopping)",
+    "State persistence across calls verified",
+    "Invalid asset returns 400",
+    "Invalid engine version returns 400",
+    "State endpoint with custom symbol works"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_macro_engine_v2.py",
+    "/app/test_reports/pytest/pytest_results_v2.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "Code is well-structured with clear separation of concerns (RegimeStateService, RollingCalibrationService, MacroEngineV2)",
+    "Hysteresis implementation is robust with minDaysInRegime, probThreshold, and maxChanges30D checks",
+    "MongoDB models use proper indexes for efficient queries (symbol + asOf)",
+    "V2 engine correctly integrates gold as exogenous signal with flight-to-quality detection"
+  ],
+
+  "updated_files": [
+    "/app/backend/tests/test_macro_engine_v2.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (20/20 tests passed)",
+    "frontend": "N/A (backend only testing requested)"
+  },
+
+  "seed_data_creation": "No seed data needed - tests use real FRED data and MongoDB state",
+
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "V2 Macro Engine backend is fully functional. All P0 features tested: RegimeStateService (DB-backed state with hysteresis), RollingCalibrationService (adaptive weights), V2 engine integration, state/calibration API endpoints. V2 currently falls back to V1 in auto mode due to confidence threshold (0.48 < 0.6), which is expected behavior.",
+
+  "verified_features": {
+    "v2_pack": {
+      "endpoint": "GET /api/macro-engine/v2/DXY/pack",
+      "stateInfo": "entropy, changeCount30D, lastChangeAt, weightsSource",
+      "internals": "transitionMatrix, stationaryDist, goldSignal"
+    },
+    "regime_state_service": {
+      "current_state": "GET /api/macro-engine/v2/state/current",
+      "history": "GET /api/macro-engine/v2/state/history",
+      "hysteresis": "minDaysInRegime=3, probThreshold=0.15, maxChanges30D=5"
+    },
+    "calibration_service": {
+      "weights": "GET /api/macro-engine/v2/calibration/weights",
+      "history": "GET /api/macro-engine/v2/calibration/history",
+      "run": "POST /api/macro-engine/v2/calibration/run"
+    },
+    "router": {
+      "status": "GET /api/macro-engine/status",
+      "force": "POST /api/macro-engine/admin/force-engine",
+      "reset": "POST /api/macro-engine/admin/reset"
+    }
+  }
+}
