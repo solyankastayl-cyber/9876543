@@ -83,16 +83,18 @@ export class ForecastPipelineService {
   
   /**
    * Extract regime probabilities from macro pack
+   * Supports both 'posterior' (old format) and 'probs' (new format)
    */
   private extractRegimeProbs(macroPack: any): Record<string, number> {
-    const posterior = macroPack?.regime?.posterior || {};
+    // Try new format first (probs), then fallback to posterior
+    const probs = macroPack?.regime?.probs || macroPack?.regime?.posterior || {};
     
     return {
-      EASING: posterior['EASING'] || 0,
-      TIGHTENING: posterior['TIGHTENING'] || 0,
-      STRESS: posterior['STRESS'] || 0,
-      NEUTRAL: posterior['NEUTRAL'] || 0,
-      NEUTRAL_MIXED: posterior['MIXED'] || posterior['NEUTRAL_MIXED'] || 0,
+      EASING: probs['EASING'] || 0,
+      TIGHTENING: probs['TIGHTENING'] || 0,
+      STRESS: probs['STRESS'] || 0,
+      NEUTRAL: probs['NEUTRAL'] || 0,
+      NEUTRAL_MIXED: probs['MIXED'] || probs['NEUTRAL_MIXED'] || 0,
     };
   }
   
