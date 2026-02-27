@@ -296,11 +296,11 @@ class TestTrainEndpoint:
     
     def test_train_then_forecast_uses_trained_model(self, api_client):
         """After training, GET /forecast uses the trained model (not baseline)"""
-        # Train with specific seed
+        # Train with longer date range to ensure enough samples
         train_payload = {
             "asset": "dxy",
-            "start": "2022-01-01",
-            "end": "2024-06-01",
+            "start": "2015-01-01",
+            "end": "2025-01-01",
             "step": "WEEKLY",
             "seed": 123
         }
