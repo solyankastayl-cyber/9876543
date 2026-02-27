@@ -385,8 +385,9 @@ class TestRegressionP91P92:
         response = requests.get(f"{BASE_URL}/api/brain/v2/decision", timeout=30)
         assert response.status_code == 200, f"Decision failed: {response.text}"
         data = response.json()
-        assert data.get("ok") is True, f"Decision not ok: {data}"
+        # Decision endpoint doesn't return ok field, check for scenario instead
         assert "scenario" in data, "Missing scenario in decision"
+        assert "name" in data.get("scenario", {}), "Missing scenario.name"
         print(f"✓ Decision works: scenario={data.get('scenario', {}).get('name')}")
 
     def test_forecast_still_works(self):
@@ -394,9 +395,10 @@ class TestRegressionP91P92:
         response = requests.get(f"{BASE_URL}/api/brain/v2/forecast", timeout=30)
         assert response.status_code == 200, f"Forecast failed: {response.text}"
         data = response.json()
-        assert data.get("ok") is True, f"Forecast not ok: {data}"
-        assert "forecast" in data, "Missing forecast"
-        print(f"✓ Forecast works")
+        # Forecast endpoint returns byHorizon instead of forecast
+        assert "byHorizon" in data or "forecast" in data, "Missing forecast data (byHorizon or forecast)"
+        assert "asOf" in data, "Missing asOf in forecast"
+        print(f"✓ Forecast works: asOf={data.get('asOf')}")
 
 
 if __name__ == "__main__":
