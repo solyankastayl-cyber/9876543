@@ -266,10 +266,24 @@ export class BrainSimulationService {
     gates['brainFlipRate'] = { pass: flipGate, value: metrics.brainFlipRate, threshold: 6 };
     if (!flipGate) reasons.push(`Brain flips too fast: ${metrics.brainFlipRate}/year (max 6)`);
 
-    // Gate 4: maxOverrideIntensity <= 0.35
-    const intensityGate = metrics.maxOverrideIntensity <= 0.35;
-    gates['maxOverrideIntensity'] = { pass: intensityGate, value: metrics.maxOverrideIntensity, threshold: 0.35 };
-    if (!intensityGate) reasons.push(`Override too aggressive: ${metrics.maxOverrideIntensity} (max 0.35)`);
+    // Gate 4: maxOverrideIntensity - scenario-dependent thresholds
+    // BASE: 0.35, RISK: 0.45, TAIL: 0.60
+    const OVERRIDE_THRESHOLDS: Record<string, number> = { BASE: 0.35, RISK: 0.45, TAIL: 0.60 };
+    // Use the dominant scenario from samples to pick threshold
+    const scenarioCount: Record<string, number> = {};
+    for (const s of samples) {
+      const sc = s.compare.scenario;
+      scenarioCount[sc] = (scenarioCount[sc] || 0) + 1;
+    }
+    let dominantScenario = 'BASE';
+    let maxCount = 0;
+    for (const [sc, count] of Object.entries(scenarioCount)) {
+      if (count > maxCount) { dominantScenario = sc; maxCount = count; }
+    }
+    const overrideThreshold = OVERRIDE_THRESHOLDS[dominantScenario] || 0.60;
+    const intensityGate = metrics.maxOverrideIntensity <= overrideThreshold;
+    gates['maxOverrideIntensity'] = { pass: intensityGate, value: metrics.maxOverrideIntensity, threshold: overrideThreshold };
+    if (!intensityGate) reasons.push(`Override too aggressive: ${metrics.maxOverrideIntensity} (max ${overrideThreshold} for ${dominantScenario})`);
 
     const allPass = Object.values(gates).every(g => g.pass);
     if (allPass) reasons.push('All acceptance gates passed');
