@@ -592,6 +592,14 @@ async function main() {
   await stressCrashTestRoutes(app);
   console.log('[Fractal] ✅ Stress+CrashTest registered at /api/brain/v2/stress, /api/platform/crash-test');
   
+  // ═══════════════════════════════════════════════════════════════
+  // P10.1 — REGIME MEMORY STATE (Duration + Stability)
+  // ═══════════════════════════════════════════════════════════════
+  console.log('[Fractal] Registering Regime Memory State (P10.1)...');
+  const { regimeMemoryRoutes } = await import('./modules/brain/routes/regime_memory.routes.js');
+  await regimeMemoryRoutes(app);
+  console.log('[Fractal] ✅ Regime Memory P10.1 registered at /api/brain/v2/regime-memory/*');
+  
   // Graceful shutdown
   const shutdown = async (signal: string) => {
     console.log(`[Fractal] Received ${signal}, shutting down...`);
