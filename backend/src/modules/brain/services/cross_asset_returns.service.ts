@@ -5,7 +5,7 @@
  * All data is asOf-safe (only data <= asOf).
  */
 
-import { getMongoDb } from '../../../../db/mongoose.js';
+import { getMongoDb } from '../../../db/mongoose.js';
 
 export type CrossAssetId = 'btc' | 'spx' | 'dxy' | 'gold';
 
