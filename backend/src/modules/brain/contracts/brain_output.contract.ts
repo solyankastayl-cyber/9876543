@@ -79,12 +79,16 @@ export interface BrainOutputPack {
   // Explainability
   evidence: BrainEvidence;
   
-  // Meta
+  // P10.3: MetaRisk integration
   meta: {
     engineVersion: string;
     brainVersion: string;
     computeTimeMs?: number;
     inputsHash?: string;
+    // MetaRisk fields (added in P10.3)
+    posture?: 'DEFENSIVE' | 'NEUTRAL' | 'OFFENSIVE';
+    globalScale?: number;
+    maxOverrideCap?: number;
   };
 }
 
