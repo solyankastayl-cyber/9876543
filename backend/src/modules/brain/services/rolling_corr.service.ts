@@ -84,10 +84,9 @@ export class RollingCorrService {
     const corrSpxGold = this.computePairCorr(windowReturns.spx, windowReturns.gold, returnsService);
     const corrDxyGold = this.computePairCorr(windowReturns.dxy, windowReturns.gold, returnsService);
 
-    // sampleN = minimum aligned pair count
+    // sampleN = minimum aligned pair count for core assets (BTC/SPX/DXY)
     const sampleN = Math.min(
-      corrBtcSpx.n, corrBtcDxy.n, corrSpxDxy.n,
-      Math.max(corrBtcGold.n, 1), Math.max(corrSpxGold.n, 1), Math.max(corrDxyGold.n, 1)
+      corrBtcSpx.n, corrBtcDxy.n, corrSpxDxy.n
     );
 
     return {
