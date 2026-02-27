@@ -568,6 +568,14 @@ async function main() {
   await brainForecastRoutes(app);
   console.log('[Fractal] ✅ Brain ML registered at /api/brain/v2/features, /forecast');
   
+  // ═══════════════════════════════════════════════════════════════
+  // P9.0 — CROSS-ASSET CORRELATION REGIME CLASSIFIER
+  // ═══════════════════════════════════════════════════════════════
+  console.log('[Fractal] Registering Cross-Asset Regime Classifier...');
+  const { crossAssetRoutes } = await import('./modules/brain/routes/cross_asset.routes.js');
+  await crossAssetRoutes(app);
+  console.log('[Fractal] ✅ Cross-Asset registered at /api/brain/v2/cross-asset');
+  
   // Graceful shutdown
   const shutdown = async (signal: string) => {
     console.log(`[Fractal] Received ${signal}, shutting down...`);
