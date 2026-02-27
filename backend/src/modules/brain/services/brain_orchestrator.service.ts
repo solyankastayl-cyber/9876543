@@ -57,6 +57,11 @@ export class BrainOrchestratorService {
       scenario = scenarioResult.scenario;
       overrideReasoning = scenarioResult.reasoning;
       directives = computeForecastOverrides(forecast, world, scenario, overrideReasoning);
+      
+      // P9.0: Cross-asset correlation overrides
+      if (world.crossAsset) {
+        this.applyCrossAssetOverrides(world.crossAsset, directives, overrideReasoning, scenario);
+      }
     } else {
       // Legacy rule-based fallback (pre-P8.0-C)
       scenario = this.computeLegacyScenario(world);
