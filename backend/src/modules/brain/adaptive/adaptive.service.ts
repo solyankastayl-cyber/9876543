@@ -190,44 +190,50 @@ export class AdaptiveService {
     end: string, 
     steps: number
   ): Promise<TuningMetrics> {
-    // Use existing Brain Compare service for walk-forward
+    // Generate dates for walk-forward
+    const dates = this.generateDates(start, end, steps);
     const compareService = getBrainCompareService();
-    const timeline = await compareService.runComparison({ start, end, stepDays: Math.ceil(365 / steps) });
     
-    // Extract metrics from timeline
     const deltas: number[] = [];
     let flipCount = 0;
     let totalIntensity = 0;
     let degradationCount = 0;
     
-    for (let i = 0; i < timeline.points.length; i++) {
-      const p = timeline.points[i];
-      const delta = (p.onAllocations?.spxSize || 0) - (p.offAllocations?.spxSize || 0);
-      deltas.push(delta);
-      
-      // Count flips (direction changes)
-      if (i > 0) {
-        const prevDelta = deltas[i - 1];
-        if ((delta > 0 && prevDelta < 0) || (delta < 0 && prevDelta > 0)) {
-          flipCount++;
+    for (let i = 0; i < dates.length; i++) {
+      try {
+        const asOf = dates[i];
+        const comparison = await compareService.compare(asOf);
+        
+        // Delta = difference between brain ON and OFF
+        const delta = comparison.diff?.delta?.spx || 0;
+        deltas.push(delta);
+        
+        // Count flips (direction changes)
+        if (i > 0) {
+          const prevDelta = deltas[i - 1];
+          if ((delta > 0 && prevDelta < 0) || (delta < 0 && prevDelta > 0)) {
+            flipCount++;
+          }
         }
-      }
-      
-      // Track intensity
-      totalIntensity += Math.abs(delta);
-      
-      // Track degradation (if delta is negative = Brain hurt performance)
-      if (delta < params.gates.maxDegradationPp / 100) {
-        degradationCount++;
+        
+        // Track intensity
+        totalIntensity += Math.abs(delta);
+        
+        // Track degradation (if delta is negative = Brain hurt performance)
+        if (delta < params.gates.maxDegradationPp / 100) {
+          degradationCount++;
+        }
+      } catch (e) {
+        console.warn(`[Adaptive] Compare failed at date ${dates[i]}:`, (e as Error).message);
       }
     }
     
     const n = deltas.length || 1;
     const avgDelta = deltas.reduce((a, b) => a + b, 0) / n;
-    const minDelta = Math.min(...deltas);
-    const maxDelta = Math.max(...deltas);
+    const minDelta = deltas.length > 0 ? Math.min(...deltas) : 0;
+    const maxDelta = deltas.length > 0 ? Math.max(...deltas) : 0;
     const avgIntensity = totalIntensity / n;
-    const maxIntensity = Math.max(...deltas.map(Math.abs));
+    const maxIntensity = deltas.length > 0 ? Math.max(...deltas.map(Math.abs)) : 0;
     
     // Calculate stability (variance of deltas)
     const variance = deltas.reduce((sum, d) => sum + Math.pow(d - avgDelta, 2), 0) / n;
@@ -235,7 +241,7 @@ export class AdaptiveService {
     
     // Convert to yearly flip rate
     const periodDays = (new Date(end).getTime() - new Date(start).getTime()) / (24 * 60 * 60 * 1000);
-    const flipRatePerYear = (flipCount / periodDays) * 365;
+    const flipRatePerYear = periodDays > 0 ? (flipCount / periodDays) * 365 : 0;
     
     return {
       avgDeltaHitRatePp: round4(avgDelta * 100),  // Convert to percentage points
@@ -244,9 +250,25 @@ export class AdaptiveService {
       flipRatePerYear: round4(flipRatePerYear),
       avgOverrideIntensity: round4(avgIntensity),
       maxOverrideIntensity: round4(maxIntensity),
-      stabilityScore: round4(stabilityScore),
+      stabilityScore: round4(Math.max(0, stabilityScore)),
       degradationCount,
     };
+  }
+
+  private generateDates(start: string, end: string, steps: number): string[] {
+    const dates: string[] = [];
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const totalDays = (endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000);
+    const stepDays = Math.max(1, Math.floor(totalDays / steps));
+    
+    let current = new Date(start);
+    while (current <= endDate && dates.length < steps) {
+      dates.push(current.toISOString().split('T')[0]);
+      current.setDate(current.getDate() + stepDays);
+    }
+    
+    return dates;
   }
 
   // ═══════════════════════════════════════════════════════════════
