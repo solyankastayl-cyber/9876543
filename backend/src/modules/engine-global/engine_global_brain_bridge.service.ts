@@ -46,14 +46,23 @@ export interface MetaRiskSection {
   tailRiskClamp: boolean;
 }
 
+export interface OverrideIntensitySection {
+  brain: number;      // Intensity from Brain directives
+  optimizer: number;  // Intensity from Optimizer deltas
+  total: number;      // Combined intensity
+  cap: number;        // Current cap
+  withinCap: boolean;
+}
+
 export interface BrainSection {
   mode: BrainMode;
   decision?: BrainOutputPack;
   wouldApply?: BrainWouldApply;
   metaRisk?: MetaRiskSection;
+  overrideIntensity?: OverrideIntensitySection;  // P12: Split intensity
   bridgeSteps?: any[];
   warnings?: string[];
-  optimizer?: OptimizerOutput;  // P11: Optimizer result
+  optimizer?: OptimizerOutput;
 }
 
 export interface EngineGlobalWithBrainResponse extends EngineGlobalResponse {
