@@ -1,0 +1,1137 @@
+<analysis>**original_problem_statement:**
+The user requested to deploy an existing codebase from a GitHub repository (). The primary focus is on developing and refining a fractals logic module for currency pairs (specifically DXY). While other logic for SPX and Bitcoin is frozen, the full platform (frontend, backend, admin panel) must be operational.
+
+The main development tasks assigned were:
+1.  **Stress Simulation Mode & Platform Crash-Test:** Implement and verify a system to test the platform's behavior under extreme black swan scenarios (e.g., COVID Crash, 2008-style crisis). This involves new endpoints (, ) and calculating a .
+2.  **P10 - Meta-Regime Memory Layer:** Create a memory for the system to understand how long it has been in a specific market regime (e.g., STRESS for 14 days). This context is used to adjust the system's aggressiveness ().
+3.  **P11 - Capital Allocation Optimizer:** Implement a wrapper that makes small, safe adjustments to the final allocations based on a deterministic, explainable objective function. It is designed to be a final, gentle nudge rather than a core strategy driver.
+4.  **P12 - Adaptive Coefficient Learning:** Build a module that can tune the system's core parameters over time using a walk-forward analysis, without using black-box ML. This is the current in-progress task.
+
+**User's preferred language**: Русский (Russian)
+
+**what currently exists?**
+A fully operational, complex financial analysis platform.
+-   **Frontend:** Multiple React-based terminals for BTC, SPX, DXY, and an admin panel are running.
+-   **Backend:** A sophisticated TypeScript (Fastify) backend is running, proxied by a Python script. It includes:
+    -   A core Brain and Engine for fractal analysis.
+    -   **Stress & Crash Testing:** A robust, asynchronous crash-testing framework is in place. The platform currently achieves a top  of **1.0**, making it PRODUCTION grade.
+    -   **P10 - Meta-Regime Memory:** A complete memory layer that tracks regime duration and stability is integrated.
+    -   **P11 - Optimizer Wrapper:** A safety-constrained optimizer that applies small deltas to allocations is fully integrated.
+-   **Database:** MongoDB is used to store regime memory and adaptive parameter history.
+
+**Last working item**:
+-   **Last item agent was working:** Implementation of **P12 - Adaptive Coefficient Learning**. The agent created the necessary modules, services, and endpoints. The final step was to trigger the tuning process via a  request to . This process performs a walk-forward analysis with a grid search to find optimal system parameters, which is computationally intensive.
+-   **Status:** IN PROGRESS
+-   **Agent Testing Done:** N
+-   **Which testing method agent to use?** manual testing by curl
+-   **User Testing Done:** N
+
+**All Pending/In progress Issue list**:
+-   **Issue 1: P12 Adaptive Tuning Job is Extremely Slow (P0)**
+    -   **Description:** The adaptive tuning process, initiated via , is extremely long-running. It involves nested loops that call the  for every historical date step and for every parameter variation in a grid search. The job was still running at the end of the session, and its status is unknown.
+    -   **Attempted fixes:** The agent identified that the  lacked a batch/timeline method, forcing the agent to implement a slow, iterative approach. No fix for the slowness has been applied yet.
+    -   **Next debug checklist:**
+        1.  Check the backend logs (==> /var/log/supervisor/backend.err.log <==
+2026-02-27 22:47:59,166 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     ('10.79.167.146', 39162) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:48:12,910 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+INFO:     ('10.79.167.145', 41654) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:48:26,668 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+INFO:     ('10.79.167.145', 56108) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:48:52,684 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+2026-02-27 22:48:58,951 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 22:48:59,142 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     ('10.79.167.146', 40584) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:49:15,066 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+INFO:     ('10.79.167.145', 47132) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:49:42,086 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+2026-02-27 22:49:58,932 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 22:49:59,173 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     ('10.79.167.145', 60552) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:50:27,541 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+2026-02-27 22:50:58,949 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 22:50:59,153 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     ('10.79.167.145', 53784) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:51:08,958 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+INFO:     ('10.79.167.145', 48092) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:51:30,812 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+INFO:     ('10.79.167.146', 46960) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:51:53,784 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+2026-02-27 22:51:58,950 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 22:51:59,143 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     ('10.79.167.146', 48214) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:52:16,188 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+INFO:     ('10.79.167.145', 36576) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:52:39,192 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+2026-02-27 22:52:58,955 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 22:52:59,170 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     ('10.79.167.146', 45326) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:53:00,145 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+INFO:     ('10.79.167.145', 48164) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:53:19,253 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+2026-02-27 22:53:59,834 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 22:53:59,835 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     ('10.79.167.146', 34668) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:54:06,549 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+INFO:     ('10.79.167.145', 44372) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:54:23,405 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [497]
+INFO:     Stopping reloader process [495]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [1435] using WatchFiles
+INFO:     Started server process [1437]
+INFO:     Waiting for application startup.
+2026-02-27 22:54:33,539 - server - INFO - Starting TypeScript Fractal backend on port 8002...
+2026-02-27 22:54:43,773 - server - INFO - Still waiting for TS backend... (10s)
+2026-02-27 22:54:53,981 - server - INFO - Still waiting for TS backend... (20s)
+2026-02-27 22:55:04,191 - server - INFO - Still waiting for TS backend... (30s)
+2026-02-27 22:55:14,404 - server - INFO - Still waiting for TS backend... (40s)
+2026-02-27 22:55:19,511 - server - WARNING - TypeScript backend may not be fully ready
+INFO:     Application startup complete.
+INFO:     ('10.79.167.145', 39776) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:55:23,537 - server - WARNING - WebSocket proxy error: [Errno 111] Connect call failed ('127.0.0.1', 8002)
+INFO:     connection closed
+INFO:     ('10.79.167.145', 39788) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:55:25,323 - server - WARNING - WebSocket proxy error: [Errno 111] Connect call failed ('127.0.0.1', 8002)
+INFO:     connection closed
+INFO:     ('10.79.167.146', 60392) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:55:29,856 - server - WARNING - WebSocket proxy error: [Errno 111] Connect call failed ('127.0.0.1', 8002)
+INFO:     connection closed
+INFO:     ('10.79.167.146', 60394) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:55:31,637 - server - WARNING - WebSocket proxy error: [Errno 111] Connect call failed ('127.0.0.1', 8002)
+INFO:     connection closed
+INFO:     ('10.79.167.146', 60406) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:55:38,067 - server - WARNING - WebSocket proxy error: [Errno 111] Connect call failed ('127.0.0.1', 8002)
+INFO:     connection closed
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1437]
+INFO:     Stopping reloader process [1435]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [1535] using WatchFiles
+INFO:     Started server process [1537]
+INFO:     Waiting for application startup.
+2026-02-27 22:55:45,488 - server - INFO - Starting TypeScript Fractal backend on port 8002...
+2026-02-27 22:55:55,713 - server - INFO - Still waiting for TS backend... (10s)
+2026-02-27 22:56:05,925 - server - INFO - Still waiting for TS backend... (20s)
+2026-02-27 22:56:16,137 - server - INFO - Still waiting for TS backend... (30s)
+2026-02-27 22:56:26,353 - server - INFO - Still waiting for TS backend... (40s)
+2026-02-27 22:56:31,463 - server - WARNING - TypeScript backend may not be fully ready
+INFO:     Application startup complete.
+INFO:     ('10.79.167.146', 41908) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:56:53,815 - server - WARNING - WebSocket proxy error: [Errno 111] Connect call failed ('127.0.0.1', 8002)
+INFO:     connection closed
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1537]
+INFO:     Stopping reloader process [1535]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [1729] using WatchFiles
+INFO:     Started server process [1731]
+INFO:     Waiting for application startup.
+2026-02-27 22:57:07,270 - server - INFO - Starting TypeScript Fractal backend on port 8002...
+2026-02-27 22:57:09,331 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/health "HTTP/1.1 200 OK"
+2026-02-27 22:57:09,332 - server - INFO - TypeScript backend ready after 2s
+INFO:     Application startup complete.
+2026-02-27 22:57:14,744 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 22:57:14,745 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     ('10.79.167.146', 45686) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:57:24,439 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+2026-02-27 22:58:14,782 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 22:58:14,783 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     ('10.79.167.145', 59380) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:58:24,401 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+INFO:     ('10.79.167.145', 54286) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:58:43,977 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+INFO:     ('10.79.167.146', 41648) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:59:01,408 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+2026-02-27 22:59:14,750 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 22:59:14,766 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     ('10.79.167.145', 41380) - "WebSocket /api/ws" [accepted]
+INFO:     connection open
+2026-02-27 22:59:15,579 - server - WARNING - WebSocket proxy error: server rejected WebSocket connection: HTTP 404
+INFO:     connection closed
+2026-02-27 23:00:14,713 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:00:14,821 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:01:14,787 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:01:14,789 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:02:14,695 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:02:14,742 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:03:14,840 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:03:14,854 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:04:14,775 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:04:14,785 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:05:14,874 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:05:14,888 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:06:14,705 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:06:14,759 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:07:14,722 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:07:14,800 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:08:14,809 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:08:14,827 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:09:14,848 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:09:14,872 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:10:14,815 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:10:14,846 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:11:14,753 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:11:14,792 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:12:14,909 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:12:14,936 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:12:30,210 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global "HTTP/1.1 200 OK"
+2026-02-27 23:13:14,800 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:13:14,814 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:14:14,881 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:14:15,006 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:15:14,789 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:15:14,863 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:16:15,017 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:16:15,042 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:17:15,305 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:17:15,378 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1731]
+INFO:     Stopping reloader process [1729]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [2370] using WatchFiles
+INFO:     Started server process [2372]
+INFO:     Waiting for application startup.
+2026-02-27 23:17:34,302 - server - INFO - Starting TypeScript Fractal backend on port 8002...
+2026-02-27 23:17:37,398 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/health "HTTP/1.1 200 OK"
+2026-02-27 23:17:37,398 - server - INFO - TypeScript backend ready after 3s
+INFO:     Application startup complete.
+2026-02-27 23:18:14,771 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:18:14,771 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:18:39,610 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/brain/v2/decision "HTTP/1.1 200 OK"
+2026-02-27 23:18:58,600 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1 "HTTP/1.1 200 OK"
+2026-02-27 23:19:14,700 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:19:14,749 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:19:23,059 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1 "HTTP/1.1 200 OK"
+2026-02-27 23:19:31,020 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1 "HTTP/1.1 200 OK"
+2026-02-27 23:19:38,598 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1 "HTTP/1.1 200 OK"
+2026-02-27 23:19:46,202 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1 "HTTP/1.1 200 OK"
+2026-02-27 23:19:53,524 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1 "HTTP/1.1 200 OK"
+2026-02-27 23:19:59,079 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8002/api/platform/crash-test/run-async "HTTP/1.1 400 Bad Request"
+2026-02-27 23:20:06,440 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8002/api/platform/crash-test/run-async "HTTP/1.1 200 OK"
+2026-02-27 23:20:14,736 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:20:14,740 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:21:14,704 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:21:14,811 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:22:12,113 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/platform/crash-test/status "HTTP/1.1 200 OK"
+2026-02-27 23:22:14,755 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:22:15,084 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:23:14,725 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:23:14,776 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:24:14,730 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:24:14,806 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:24:17,337 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/platform/crash-test/status "HTTP/1.1 200 OK"
+2026-02-27 23:24:33,584 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/platform/crash-test/status "HTTP/1.1 200 OK"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2372]
+INFO:     Stopping reloader process [2370]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [2941] using WatchFiles
+INFO:     Started server process [2943]
+INFO:     Waiting for application startup.
+2026-02-27 23:25:08,191 - server - INFO - Starting TypeScript Fractal backend on port 8002...
+2026-02-27 23:25:10,252 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/health "HTTP/1.1 200 OK"
+2026-02-27 23:25:10,252 - server - INFO - TypeScript backend ready after 2s
+INFO:     Application startup complete.
+2026-02-27 23:25:14,797 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:25:14,799 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:26:10,497 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1 "HTTP/1.1 200 OK"
+2026-02-27 23:26:14,772 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:26:14,772 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:26:17,452 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8002/api/platform/crash-test/run-async "HTTP/1.1 400 Bad Request"
+2026-02-27 23:26:17,488 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8002/api/platform/crash-test/run-async "HTTP/1.1 200 OK"
+2026-02-27 23:27:14,746 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:27:14,768 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:28:14,778 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:28:14,780 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:29:14,740 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:29:14,772 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:30:14,691 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:30:14,741 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:30:24,489 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/platform/crash-test/status "HTTP/1.1 200 OK"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2943]
+INFO:     Stopping reloader process [2941]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [3273] using WatchFiles
+INFO:     Started server process [3275]
+INFO:     Waiting for application startup.
+2026-02-27 23:30:53,768 - server - INFO - Starting TypeScript Fractal backend on port 8002...
+2026-02-27 23:30:55,831 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/health "HTTP/1.1 200 OK"
+2026-02-27 23:30:55,831 - server - INFO - TypeScript backend ready after 2s
+INFO:     Application startup complete.
+2026-02-27 23:31:14,692 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:31:14,753 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:31:44,838 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8002/api/platform/crash-test/run-async "HTTP/1.1 400 Bad Request"
+2026-02-27 23:31:44,880 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8002/api/platform/crash-test/run-async "HTTP/1.1 200 OK"
+2026-02-27 23:32:14,819 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:32:14,821 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:33:14,804 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:33:14,804 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:34:14,746 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:34:14,748 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:34:50,744 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/platform/crash-test/status "HTTP/1.1 200 OK"
+2026-02-27 23:35:14,699 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:35:14,750 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:36:14,735 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:36:15,058 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:36:56,101 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/platform/crash-test/status "HTTP/1.1 200 OK"
+2026-02-27 23:37:14,695 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:37:14,733 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3275]
+INFO:     Stopping reloader process [3273]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [3636] using WatchFiles
+INFO:     Started server process [3638]
+INFO:     Waiting for application startup.
+2026-02-27 23:37:32,516 - server - INFO - Starting TypeScript Fractal backend on port 8002...
+2026-02-27 23:37:34,575 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/health "HTTP/1.1 200 OK"
+2026-02-27 23:37:34,576 - server - INFO - TypeScript backend ready after 2s
+INFO:     Application startup complete.
+2026-02-27 23:38:14,709 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:38:14,763 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:38:23,587 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8002/api/platform/crash-test/run-async "HTTP/1.1 200 OK"
+2026-02-27 23:39:14,796 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:39:14,803 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:40:14,788 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:40:14,789 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:41:14,776 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:41:14,777 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:41:30,274 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/platform/crash-test/status "HTTP/1.1 200 OK"
+2026-02-27 23:42:14,688 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:42:14,734 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:43:14,713 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:43:14,737 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:43:28,292 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/system/health "HTTP/1.1 200 OK"
+2026-02-27 23:43:35,843 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/platform/crash-test/status "HTTP/1.1 200 OK"
+2026-02-27 23:44:14,720 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:44:14,752 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:45:14,691 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:45:14,741 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:46:14,392 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:46:14,746 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:47:14,733 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:47:14,774 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:48:14,696 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:48:14,753 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:48:27,425 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/system/health "HTTP/1.1 200 OK"
+2026-02-27 23:49:14,781 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:49:14,842 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:50:14,760 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:50:14,761 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [3638]
+INFO:     Stopping reloader process [3636]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [4577] using WatchFiles
+INFO:     Started server process [4579]
+INFO:     Waiting for application startup.
+2026-02-27 23:51:03,648 - server - INFO - Starting TypeScript Fractal backend on port 8002...
+2026-02-27 23:51:05,713 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/health "HTTP/1.1 200 OK"
+2026-02-27 23:51:05,713 - server - INFO - TypeScript backend ready after 2s
+INFO:     Application startup complete.
+2026-02-27 23:51:15,181 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:51:15,182 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:52:04,734 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/brain/v2/optimizer/schema "HTTP/1.1 200 OK"
+2026-02-27 23:52:14,744 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:52:14,745 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:52:27,561 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1 "HTTP/1.1 200 OK"
+2026-02-27 23:52:38,459 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1&optimizer=1 "HTTP/1.1 200 OK"
+2026-02-27 23:53:14,718 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:53:14,778 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:53:21,776 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/brain/v2/optimizer/preview?asOf=2026-02-15 "HTTP/1.1 200 OK"
+2026-02-27 23:53:35,771 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/brain/v2/optimizer/preview?asOf=2026-02-15 "HTTP/1.1 200 OK"
+2026-02-27 23:53:46,657 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1&optimizer=1 "HTTP/1.1 200 OK"
+2026-02-27 23:53:57,715 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1&optimizer=1 "HTTP/1.1 200 OK"
+2026-02-27 23:54:08,695 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1&optimizer=1 "HTTP/1.1 200 OK"
+2026-02-27 23:54:14,709 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:54:14,782 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:54:25,489 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8002/api/brain/v2/optimizer/simulate "HTTP/1.1 200 OK"
+2026-02-27 23:54:41,019 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8002/api/brain/v2/optimizer/simulate "HTTP/1.1 200 OK"
+2026-02-27 23:54:55,168 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8002/api/brain/v2/optimizer/simulate "HTTP/1.1 200 OK"
+2026-02-27 23:55:09,523 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8002/api/brain/v2/optimizer/simulate "HTTP/1.1 200 OK"
+2026-02-27 23:55:14,697 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:55:14,762 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:55:15,673 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8002/api/platform/crash-test/run-async "HTTP/1.1 200 OK"
+2026-02-27 23:56:14,701 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:56:14,826 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:57:14,744 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:57:14,895 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:58:14,696 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:58:14,805 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:59:14,447 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-27 23:59:14,765 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-27 23:59:22,150 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/platform/crash-test/status "HTTP/1.1 200 OK"
+2026-02-27 23:59:41,656 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1 "HTTP/1.1 200 OK"
+2026-02-27 23:59:52,621 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1&optimizer=1 "HTTP/1.1 200 OK"
+2026-02-28 00:00:14,629 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:00:14,768 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:01:14,774 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:01:14,775 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:02:14,775 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:02:14,775 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:03:14,763 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:03:14,875 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:04:14,760 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:04:14,761 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:05:14,798 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:05:14,799 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:05:56,310 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/system/health "HTTP/1.1 200 OK"
+2026-02-28 00:06:06,286 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/system/health "HTTP/1.1 200 OK"
+2026-02-28 00:06:14,703 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:06:14,749 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:06:15,964 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/system/health "HTTP/1.1 200 OK"
+2026-02-28 00:06:26,283 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/system/health "HTTP/1.1 200 OK"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [4579]
+INFO:     Stopping reloader process [4577]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [5477] using WatchFiles
+INFO:     Started server process [5479]
+INFO:     Waiting for application startup.
+2026-02-28 00:06:53,251 - server - INFO - Starting TypeScript Fractal backend on port 8002...
+2026-02-28 00:06:55,359 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/health "HTTP/1.1 200 OK"
+2026-02-28 00:06:55,359 - server - INFO - TypeScript backend ready after 2s
+INFO:     Application startup complete.
+2026-02-28 00:07:14,390 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:07:14,743 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:07:54,362 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/brain/v2/adaptive/schema "HTTP/1.1 200 OK"
+2026-02-28 00:08:14,828 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:08:14,837 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:08:20,808 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/engine/global?brain=1&optimizer=1 "HTTP/1.1 200 OK"
+2026-02-28 00:08:20,857 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/brain/v2/adaptive/params?asset=dxy "HTTP/1.1 200 OK"
+2026-02-28 00:08:27,351 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8002/api/brain/v2/adaptive/run "HTTP/1.1 200 OK"
+2026-02-28 00:09:14,769 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:09:14,769 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:10:14,726 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:10:14,754 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:11:14,792 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:11:14,792 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:11:35,665 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/brain/v2/adaptive/status?id=tune_dxy_1772237307348_9f0581fc "HTTP/1.1 200 OK"
+2026-02-28 00:12:14,704 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:12:14,759 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [5479]
+INFO:     Stopping reloader process [5477]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [5916] using WatchFiles
+INFO:     Started server process [5918]
+INFO:     Waiting for application startup.
+2026-02-28 00:12:33,174 - server - INFO - Starting TypeScript Fractal backend on port 8002...
+2026-02-28 00:12:35,244 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/health "HTTP/1.1 200 OK"
+2026-02-28 00:12:35,244 - server - INFO - TypeScript backend ready after 2s
+INFO:     Application startup complete.
+2026-02-28 00:13:14,738 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:13:14,771 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:13:34,254 - httpx - INFO - HTTP Request: POST http://127.0.0.1:8002/api/brain/v2/adaptive/run "HTTP/1.1 200 OK"
+2026-02-28 00:13:49,787 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/brain/v2/adaptive/status?id=tune_dxy_1772237614245_24ce39eb "HTTP/1.1 200 OK"
+2026-02-28 00:14:14,789 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:14:14,804 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:15:14,741 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:15:14,802 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:16:14,793 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:16:14,793 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:16:56,485 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/brain/v2/adaptive/status?id=tune_dxy_1772237614245_24ce39eb "HTTP/1.1 200 OK"
+2026-02-28 00:17:14,662 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:17:14,777 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:18:14,769 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:18:14,833 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:19:14,733 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:19:14,776 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:19:16,399 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/brain/v2/adaptive/status?id=tune_dxy_1772237614245_24ce39eb "HTTP/1.1 200 OK"
+2026-02-28 00:19:57,656 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/system/health "HTTP/1.1 200 OK"
+2026-02-28 00:20:15,009 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:20:15,010 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:20:57,295 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/system/health "HTTP/1.1 200 OK"
+2026-02-28 00:21:14,773 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:21:14,774 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:22:14,773 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:22:14,873 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+2026-02-28 00:23:14,880 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/frontend/dashboard?page=1&limit=1 "HTTP/1.1 404 Not Found"
+2026-02-28 00:23:14,909 - httpx - INFO - HTTP Request: GET http://127.0.0.1:8002/api/alerts/feed?limit=5&unacknowledged=true "HTTP/1.1 404 Not Found"
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [48] using WatchFiles
+INFO:     Started server process [72]
+INFO:     Waiting for application startup.
+2026-02-28 00:24:16,628 - server - INFO - Starting TypeScript Fractal backend on port 8002...
+
+==> /var/log/supervisor/backend.out.log <==
+INFO:     127.0.0.1:47414 - "GET /api/brain/v2/stress/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55152 - "POST /api/platform/crash-test/run-async HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:55166 - "POST /api/platform/crash-test/run-async HTTP/1.1" 200 OK
+INFO:     10.79.167.146:42266 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:52688 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:41468 - "GET /api/platform/crash-test/status HTTP/1.1" 200 OK
+INFO:     10.79.167.145:32772 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:37560 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47750 - "GET /api/platform/crash-test/status HTTP/1.1" 200 OK
+INFO:     10.79.167.146:39956 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:48974 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:48132 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:48134 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:40184 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:40190 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:46976 - "GET /api/platform/crash-test/status HTTP/1.1" 200 OK
+INFO:     10.79.167.146:46200 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:46204 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:58114 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:37394 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:38752 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:38754 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:37278 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:37294 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:33694 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:33698 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:46766 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:59510 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:44402 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:44412 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:50670 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.146:43674 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:53754 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:43632 - "GET /api/brain/v2/regime-memory/schema HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58196 - "GET /api/brain/v2/regime-memory/current HTTP/1.1" 200 OK
+INFO:     10.79.167.145:32914 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:32922 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:52958 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:52970 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:46362 - "POST /api/brain/v2/regime-memory/recompute HTTP/1.1" 200 OK
+INFO:     10.79.167.146:59312 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:59314 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:35734 - "GET /api/brain/v2/regime-memory/timeline?start=2026-01-27&end=2026-02-27&stepDays=7 HTTP/1.1" 200 OK
+INFO:     10.79.167.145:43562 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:43566 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:49638 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:49654 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:59296 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:60440 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:37230 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:37236 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:52366 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:47156 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:37496 - "POST /api/brain/v2/regime-memory/recompute HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45646 - "GET /api/brain/v2/regime-memory/current?asOf=2026-02-15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45662 - "GET /api/brain/v2/regime-memory/current?asOf=2026-02-15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41164 - "GET /api/brain/v2/regime-memory/current?asOf=2026-02-01 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56606 - "GET /api/brain/v2/regime-memory/current?asOf=2026-02-27 HTTP/1.1" 200 OK
+INFO:     10.79.167.145:58046 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:50470 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:33274 - "GET /api/brain/v2/regime-memory/timeline?start=2026-01-01&end=2026-02-27&stepDays=7 HTTP/1.1" 200 OK
+INFO:     10.79.167.146:53978 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:59166 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:54844 - "GET /api/brain/v2/regime-memory/schema HTTP/1.1" 200 OK
+INFO:     10.79.167.145:54844 - "GET /api/brain/v2/regime-memory/current HTTP/1.1" 200 OK
+INFO:     10.79.167.145:54844 - "GET /api/brain/v2/regime-memory/current?asOf=2026-02-15 HTTP/1.1" 200 OK
+INFO:     10.79.167.146:45710 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:45714 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:47298 - "GET /api/brain/v2/regime-memory/current?asOf=2026-02-15 HTTP/1.1" 200 OK
+INFO:     10.79.167.145:47298 - "GET /api/brain/v2/regime-memory/current HTTP/1.1" 200 OK
+INFO:     10.79.167.146:49346 - "GET /api/brain/v2/regime-memory/current?asOf=2026-02-15 HTTP/1.1" 200 OK
+INFO:     10.79.167.145:47298 - "GET /api/brain/v2/regime-memory/current?asOf=2026-02-15 HTTP/1.1" 200 OK
+INFO:     10.79.167.145:47298 - "GET /api/brain/v2/regime-memory/current?asOf=2026-02-15 HTTP/1.1" 200 OK
+INFO:     10.79.167.146:44696 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:43036 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:43028 - "GET /api/brain/v2/regime-memory/timeline?start=2026-02-20&end=2026-02-27&stepDays=7 HTTP/1.1" 200 OK
+INFO:     10.79.167.146:57380 - "GET /api/brain/v2/regime-memory/timeline?start=2026-01-01&end=2026-02-27&stepDays=7 HTTP/1.1" 200 OK
+INFO:     10.79.167.146:57380 - "GET /api/brain/v2/regime-memory/current HTTP/1.1" 200 OK
+INFO:     10.79.167.146:51226 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     10.79.167.145:56744 - "GET /api/brain/v2/status HTTP/1.1" 200 OK
+INFO:     10.79.167.145:56744 - "GET /api/brain/v2/stress/presets HTTP/1.1" 200 OK
+INFO:     10.79.167.146:51226 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:51234 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:46646 - "GET /api/brain/v2/cross-asset HTTP/1.1" 200 OK
+INFO:     10.79.167.146:46646 - "GET /api/engine/global HTTP/1.1" 200 OK
+INFO:     10.79.167.146:34322 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:34330 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:60102 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:49578 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:36302 - "GET /api/brain/v2/regime-memory/schema HTTP/1.1" 200 OK
+INFO:     10.79.167.146:36302 - "GET /api/brain/v2/regime-memory/current HTTP/1.1" 200 OK
+INFO:     10.79.167.145:37154 - "GET /api/brain/v2/regime-memory/current?asOf=2026-02-15 HTTP/1.1" 200 OK
+INFO:     10.79.167.146:37534 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:46868 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:33602 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:33610 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:57538 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:57546 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:37188 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:37196 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:35900 - "GET /api/brain/v2/regime-memory/timeline?start=2026-01-01&end=2026-02-27&stepDays=7 HTTP/1.1" 200 OK
+INFO:     10.79.167.146:32944 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:32944 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:36390 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:44542 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:60042 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:40738 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:51720 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:51722 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:41216 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:41232 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:36694 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:36710 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:48220 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.146:53236 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:53248 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:56062 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:57172 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:33060 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:33074 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:42882 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:42886 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:43476 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:43484 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:59642 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:33876 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:34942 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:57652 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:59604 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:59612 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:40374 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:40386 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:49484 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:34864 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:38600 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:38604 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:33454 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:58960 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:47450 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.145:48516 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:44612 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:44612 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.145:44720 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.146:54072 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.145:41430 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.145:58186 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:58194 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:50058 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:41604 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:46952 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:55206 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:45414 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:45414 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:53544 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:53544 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:57964 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:57964 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:59652 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:59652 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:34044 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:34056 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:42080 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:43200 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:54638 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:54646 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:41120 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:41134 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:48904 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:48908 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:40242 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:43430 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:50130 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:50138 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:60886 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:34870 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:49562 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:49562 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:44676 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:60672 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:36472 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:36486 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:57322 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:37280 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:37280 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.145:37286 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:37314 - "GET /api/fractal/v2.1/admin/forward-equity?symbol=BTC&preset=BALANCED&horizon=30&role=ACTIVE HTTP/1.1" 200 OK
+INFO:     10.79.167.146:57324 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:57328 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.146:57346 - "GET /api/fractal/v2.1/admin/forward-equity?symbol=BTC&preset=BALANCED&horizon=30&role=ACTIVE HTTP/1.1" 200 OK
+INFO:     10.79.167.145:37280 - "GET /api/fractal/v2.1/terminal?symbol=BTC&set=extended&focus=30d HTTP/1.1" 200 OK
+INFO:     10.79.167.145:37300 - "GET /api/fractal/v2.1/strategy?symbol=BTC&preset=balanced HTTP/1.1" 200 OK
+INFO:     10.79.167.145:37286 - "GET /api/fractal/v2.1/focus-pack?symbol=BTC&focus=30d HTTP/1.1" 200 OK
+INFO:     10.79.167.146:57336 - "GET /api/fractal/v2.1/consensus-pulse?symbol=BTC&days=7 HTTP/1.1" 200 OK
+INFO:     10.79.167.145:37300 - "GET /api/fractal/v2.1/strategy?symbol=BTC&preset=balanced HTTP/1.1" 200 OK
+INFO:     10.79.167.145:37280 - "GET /api/fractal/v2.1/admin/phase-performance?symbol=BTC&tier=TACTICAL HTTP/1.1" 200 OK
+INFO:     10.79.167.145:37332 - "GET /api/fractal/v2.1/chart?symbol=BTC&limit=450 HTTP/1.1" 200 OK
+INFO:     10.79.167.146:57328 - "GET /api/fractal/v2.1/admin/phase-performance?symbol=BTC&tier=TACTICAL HTTP/1.1" 200 OK
+INFO:     10.79.167.145:37300 - "GET /api/fractal/v2.1/chart?symbol=BTC&limit=450 HTTP/1.1" 200 OK
+INFO:     10.79.167.145:37300 - "GET /api/fractal/v2.1/chart?symbol=BTC&limit=450 HTTP/1.1" 200 OK
+INFO:     10.79.167.146:36026 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:33956 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:37998 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:38014 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:52172 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:52172 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:52172 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.145:49616 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:36664 - "GET /api/fractal/v2.1/admin/forward-equity?symbol=BTC&preset=BALANCED&horizon=30&role=ACTIVE HTTP/1.1" 200 OK
+INFO:     10.79.167.145:49616 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.146:36664 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:36680 - "GET /api/fractal/v2.1/terminal?symbol=BTC&set=extended&focus=30d HTTP/1.1" 200 OK
+INFO:     10.79.167.146:36668 - "GET /api/fractal/v2.1/consensus-pulse?symbol=BTC&days=7 HTTP/1.1" 200 OK
+INFO:     10.79.167.146:36656 - "GET /api/fractal/v2.1/focus-pack?symbol=BTC&focus=30d HTTP/1.1" 200 OK
+INFO:     10.79.167.145:49626 - "GET /api/fractal/v2.1/strategy?symbol=BTC&preset=balanced HTTP/1.1" 200 OK
+INFO:     10.79.167.145:52172 - "GET /api/fractal/v2.1/admin/phase-performance?symbol=BTC&tier=TACTICAL HTTP/1.1" 200 OK
+INFO:     10.79.167.145:49616 - "GET /api/fractal/v2.1/chart?symbol=BTC&limit=450 HTTP/1.1" 200 OK
+INFO:     10.79.167.146:36680 - "GET /api/fractal/v2.1/strategy?symbol=BTC&preset=balanced HTTP/1.1" 200 OK
+INFO:     10.79.167.146:36664 - "GET /api/fractal/v2.1/admin/phase-performance?symbol=BTC&tier=TACTICAL HTTP/1.1" 200 OK
+INFO:     10.79.167.146:36664 - "GET /api/fractal/v2.1/chart?symbol=BTC&limit=450 HTTP/1.1" 200 OK
+INFO:     10.79.167.145:52172 - "GET /api/fractal/v2.1/chart?symbol=BTC&limit=450 HTTP/1.1" 200 OK
+INFO:     10.79.167.145:45212 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:45212 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:43898 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:41162 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:34636 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:34644 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:57646 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:57646 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:33614 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:41516 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:60296 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:60296 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:34788 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:38822 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53298 - "GET /api/brain/v2/meta-risk/schema HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44906 - "GET /api/brain/v2/meta-risk?asOf=2026-02-27 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43816 - "POST /api/brain/v2/meta-risk/simulate HTTP/1.1" 200 OK
+INFO:     10.79.167.145:55804 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:55804 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55126 - "GET /api/brain/v2/meta-risk?asOf=2026-02-15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55140 - "GET /api/brain/v2/meta-risk?asOf=2026-02-15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49134 - "POST /api/brain/v2/meta-risk/simulate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49142 - "POST /api/brain/v2/meta-risk/simulate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49150 - "POST /api/brain/v2/meta-risk/simulate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35872 - "POST /api/brain/v2/meta-risk/simulate HTTP/1.1" 200 OK
+INFO:     10.79.167.145:52026 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:52026 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:32884 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:32884 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:53460 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:38616 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:50728 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:35024 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:56454 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:56454 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:38878 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:43434 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:57326 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:57326 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:39086 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:39086 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:52390 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:45322 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:34656 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:57094 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60948 - "GET /api/engine/global?brain=1 HTTP/1.1" 503 Service Unavailable
+INFO:     127.0.0.1:39584 - "GET /api/engine/global?brain=1 HTTP/1.1" 503 Service Unavailable
+INFO:     10.79.167.145:56520 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:56526 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:34046 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:59080 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:41366 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:41372 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:55376 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:55376 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:52088 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:47700 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:49424 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:49424 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:42152 - "GET /api/engine/global?brain=1 HTTP/1.1" 500 Internal Server Error
+INFO:     10.79.167.146:49872 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:49880 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:44656 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:56796 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:41410 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:41412 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:35556 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:38772 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:53094 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:53094 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50542 - "GET /api/engine/global?brain=1 HTTP/1.1" 500 Internal Server Error
+INFO:     10.79.167.146:58894 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:46352 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:52752 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:38374 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:38320 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:38322 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:54572 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:54576 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:35244 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:35260 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:44906 - "GET /api/engine/global HTTP/1.1" 200 OK
+INFO:     10.79.167.146:35572 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:54464 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:37436 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:57168 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:44722 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:44736 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:49470 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:47934 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:54794 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:47930 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:34758 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:34768 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54594 - "GET /api/brain/v2/decision HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38420 - "GET /api/engine/global?brain=1 HTTP/1.1" 200 OK
+INFO:     10.79.167.145:53758 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:38960 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:35978 - "GET /api/engine/global?brain=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33834 - "GET /api/engine/global?brain=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58340 - "GET /api/engine/global?brain=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47582 - "GET /api/engine/global?brain=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54022 - "GET /api/engine/global?brain=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35276 - "POST /api/platform/crash-test/run-async HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:53088 - "POST /api/platform/crash-test/run-async HTTP/1.1" 200 OK
+INFO:     10.79.167.145:42892 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:48372 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:60178 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:57468 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47228 - "GET /api/platform/crash-test/status HTTP/1.1" 200 OK
+INFO:     10.79.167.146:59108 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:59108 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:49210 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:49210 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:44754 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:44754 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:45354 - "GET /api/platform/crash-test/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56576 - "GET /api/platform/crash-test/status HTTP/1.1" 200 OK
+INFO:     10.79.167.146:38796 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:44854 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:39456 - "GET /api/engine/global?brain=1 HTTP/1.1" 200 OK
+INFO:     10.79.167.146:37494 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:35484 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50626 - "POST /api/platform/crash-test/run-async HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:50636 - "POST /api/platform/crash-test/run-async HTTP/1.1" 200 OK
+INFO:     10.79.167.145:60472 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:42068 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:52350 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:44104 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:47784 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:47556 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:39572 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:49870 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:43986 - "GET /api/platform/crash-test/status HTTP/1.1" 200 OK
+INFO:     10.79.167.146:57062 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:57062 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49804 - "POST /api/platform/crash-test/run-async HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:49816 - "POST /api/platform/crash-test/run-async HTTP/1.1" 200 OK
+INFO:     10.79.167.145:48444 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:48458 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:51892 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:51896 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:49850 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:47428 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:42868 - "GET /api/platform/crash-test/status HTTP/1.1" 200 OK
+INFO:     10.79.167.145:56502 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:56502 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:58570 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:58570 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:42718 - "GET /api/platform/crash-test/status HTTP/1.1" 200 OK
+INFO:     10.79.167.146:37244 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:37244 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:40794 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:40794 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:36358 - "POST /api/platform/crash-test/run-async HTTP/1.1" 200 OK
+INFO:     10.79.167.145:55426 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:51494 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:51492 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:60000 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:40472 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:51564 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55238 - "GET /api/platform/crash-test/status HTTP/1.1" 200 OK
+INFO:     10.79.167.146:44044 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:44044 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:37694 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:37694 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:37708 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35936 - "GET /api/platform/crash-test/status HTTP/1.1" 200 OK
+INFO:     10.79.167.146:56218 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:35874 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:42918 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:42918 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:49292 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:34642 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:47954 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:47954 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:46358 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:36076 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:41096 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.146:57660 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:57660 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:60852 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:40932 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:54266 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:54280 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51168 - "GET /api/brain/v2/optimizer/schema HTTP/1.1" 200 OK
+INFO:     10.79.167.145:34072 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:47070 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:33998 - "GET /api/engine/global?brain=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52094 - "GET /api/engine/global?brain=1&optimizer=1 HTTP/1.1" 200 OK
+INFO:     10.79.167.146:50276 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:50276 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:34576 - "GET /api/brain/v2/optimizer/preview?asOf=2026-02-15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42252 - "GET /api/brain/v2/optimizer/preview?asOf=2026-02-15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54970 - "GET /api/engine/global?brain=1&optimizer=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60406 - "GET /api/engine/global?brain=1&optimizer=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42410 - "GET /api/engine/global?brain=1&optimizer=1 HTTP/1.1" 200 OK
+INFO:     10.79.167.145:54532 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:54532 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52682 - "POST /api/brain/v2/optimizer/simulate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46546 - "POST /api/brain/v2/optimizer/simulate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53570 - "POST /api/brain/v2/optimizer/simulate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41160 - "POST /api/brain/v2/optimizer/simulate HTTP/1.1" 200 OK
+INFO:     10.79.167.145:53082 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:40680 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:42904 - "POST /api/platform/crash-test/run-async HTTP/1.1" 200 OK
+INFO:     10.79.167.145:51104 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:35642 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:50904 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:53292 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:50472 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:59870 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:52746 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:52746 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60746 - "GET /api/platform/crash-test/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35972 - "GET /api/engine/global?brain=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46616 - "GET /api/engine/global?brain=1&optimizer=1 HTTP/1.1" 200 OK
+INFO:     10.79.167.145:33574 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:39102 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:39314 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:39320 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:39414 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:39424 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:52278 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:52278 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:56182 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:56188 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:60506 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:60510 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:49884 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.145:60348 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.146:42932 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:42932 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:42932 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.145:46862 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.145:59616 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:59616 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53074 - "GET /api/brain/v2/adaptive/schema HTTP/1.1" 200 OK
+INFO:     10.79.167.146:58116 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:58130 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:38666 - "GET /api/engine/global?brain=1&optimizer=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42732 - "GET /api/brain/v2/adaptive/params?asset=dxy HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40162 - "POST /api/brain/v2/adaptive/run HTTP/1.1" 200 OK
+INFO:     10.79.167.146:56210 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:58480 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:48560 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:48560 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:49644 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:49658 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:43592 - "GET /api/brain/v2/adaptive/status?id=tune_dxy_1772237307348_9f0581fc HTTP/1.1" 200 OK
+INFO:     10.79.167.146:57816 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:47766 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:60188 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:60188 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53996 - "POST /api/brain/v2/adaptive/run HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40114 - "GET /api/brain/v2/adaptive/status?id=tune_dxy_1772237614245_24ce39eb HTTP/1.1" 200 OK
+INFO:     10.79.167.145:55808 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:55824 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:51182 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:51182 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:44004 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:45562 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47174 - "GET /api/brain/v2/adaptive/status?id=tune_dxy_1772237614245_24ce39eb HTTP/1.1" 200 OK
+INFO:     10.79.167.145:59738 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:35722 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:48824 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:48824 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:42998 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:42998 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:51198 - "GET /api/brain/v2/adaptive/status?id=tune_dxy_1772237614245_24ce39eb HTTP/1.1" 200 OK
+INFO:     10.79.167.145:45310 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.146:59620 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:59624 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:51602 - "GET /api/system/health HTTP/1.1" 200 OK
+INFO:     10.79.167.145:49482 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:49498 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.145:50224 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:40390 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:58492 - "GET /api/frontend/dashboard?page=1&limit=1 HTTP/1.1" 404 Not Found
+INFO:     10.79.167.146:58498 - "GET /api/alerts/feed?limit=5&unacknowledged=true HTTP/1.1" 404 Not Found) for any completion messages or errors from the tuning job.
+        2.  Use  to call the status endpoint: . The  was returned in message #399.
+        3.  If the job is stuck or failed, the primary file to investigate is , specifically the  method. The performance bottleneck is the nested loops calling .
+        4.  Consider optimizing by refactoring the  to support batch processing of dates, which would significantly reduce the number of individual service calls.
+    -   **Why fix this issue and what will be achieved with the fix?** This is the current task (P12) requested by the user. Completing it will provide the system with the ability to self-tune its parameters, a critical institutional-grade feature.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** backend
+    -   **Blocked on other issue:** None
+
+**In progress Task List**:
+-   **Task 1: Complete and Verify P12 - Adaptive Coefficient Learning (P0)**
+    -   **Where to resume:** Check the status of the long-running tuning job. Based on the outcome, either analyze the results or debug the performance issue.
+    -   **What will be achieved with this?** A fully functional adaptive learning module that can optimize system parameters based on historical data, along with a report of the tuning results.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** backend
+    -   **Blocked on something:** The performance of the tuning loop in .
+
+**Upcoming and Future Tasks**
+-   **Upcoming Tasks:**
+    -   **P12 Acceptance Gates (P1):** Once the tuning run is complete, verify the results against the 7 acceptance gates defined by the user (e.g., , ).
+    -   **P12 Final Integration (P1):** Add the  block to the  response to show which parameter version is active.
+    -   **Confirm  Fix (P2):** The agent implemented a fix to report  for , , and . The next step is to explicitly show the user the output of a  call to confirm this fix meets their expectations.
+-   **Future Tasks:**
+    -   **P13 - Portfolio Return Backtest:** The user mentioned this as the next major step after P12. It will involve backtesting the strategy's performance against real market returns, including transaction costs.
+
+**Completed work in this session**
+-   **Initial Deployment & Setup:** Cloned the repository, installed all dependencies, and successfully launched the complex application stack (React, TypeScript/Fastify, Python proxy).
+-   **Stress/Crash Test Implementation:** Made the long-running stress and crash tests asynchronous to prevent API timeouts, achieving a  of **1.0**.
+-   **P10.1 - Regime Memory State:** Implemented the service and database collections to track regime duration and stability.
+-   **P10.2 - MetaRisk Scale:** Implemented the service to calculate a dynamic  and  based on regime memory.
+-   **P10.3 - MetaRisk Integration:** Integrated the MetaRisk scale into the engine, including a critical proportional shrink logic to enforce override caps and ensure system stability. This involved significant debugging to get the resilience score back to 1.0.
+-   **P11 - Optimizer Wrapper:** Implemented and integrated a soft optimizer to apply small, safe, and explainable adjustments to the final capital allocations.
+-   **P12 - Initial Implementation:** Created the contracts, models, services, and routes for the Adaptive Coefficient Learning module.
+
+**Earlier issues found/mentioned but not fixed**
+-   None. All identified issues, such as the drop in  during P10.3 development, were fixed.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Architecture:** Python (FastAPI) proxy that manages and launches a TypeScript (Fastify) backend service. Multiple separate React frontends.
+-   **Risk Management:** A multi-layered system for capital allocation based on fractal analysis, macro regimes, and market dynamics.
+-   **System Stability:** A proportional shrink algorithm () is used to enforce  and prevent the Brain from making excessively large allocation changes.
+-   **Asynchronous Jobs:** Long-running tasks like crash tests are handled asynchronously with endpoints to start, check status, and retrieve results.
+-   **Walk-Forward Analysis:** The P12 module uses this technique to tune parameters on historical data without lookahead bias.
+
+**key DB schema**
+-   : { scope, current, since, daysInState, flips30d, stability, lastUpdated }
+-   : Stores historical snapshots of regime states for timeline analysis.
+-   : Stores the currently active set of tuned parameters for each asset.
+-   : Stores all candidate parameter sets generated during tuning runs.
+
+**All files of reference**
+-   **/app/ts/modules/brain-v2/adaptive/adaptive.service.ts**: Contains the logic for the long-running tuning job (P12). **This is the most critical file for the next step.**
+-   **/app/ts/modules/brain-v2/adaptive/adaptive.routes.ts**: API endpoints for P12.
+-   **/app/ts/modules/engine/engine_global_brain_bridge.service.ts**: The central service that orchestrates the entire allocation pipeline, from base engine output to Brain overrides, MetaRisk scaling, shrinking, and the Optimizer. Was recently modified to report detailed override intensity.
+-   **/app/ts/modules/brain-v2/optimizer/optimizer.service.ts**: Contains the logic for the P11 Optimizer wrapper.
+-   **/app/ts/modules/brain-v2/meta_risk/meta_risk.service.ts**: Contains the logic for the P10.2 MetaRisk scale calculation.
+-   **/app/ts/modules/brain-v2/regime_memory/regime_memory.service.ts**: Contains the logic for the P10.1 Regime Memory state.
+-   **/app/ts/modules/brain-v2/crash_test/crash_test.service.ts**: Service that runs the platform crash test and calculates the resilience score.
+
+**Critical Info for New Agent**
+-   **Hot Reload is Unreliable:** The backend is a TypeScript process launched by a Python supervisor script. Changes to TS files often require a manual backend restart: backend: stopped
+backend: started. Do not rely on hot reload.
+-   **Engine Allocation Normalization:** The base engine can return unnormalized allocations (sum > 1). This has caused critical bugs in the past. Multiple services (, , ) now contain logic to normalize these allocations before processing. Be aware of this pattern.
+-   **User Is a Technical Architect:** The user provides extremely detailed, prescriptive instructions for each task, including formulas, contracts, and acceptance criteria. Follow these instructions precisely.
+
+**documents and test reports created in this job**
+-   /app/memory/PRD.md: Contains a running log of completed tasks and future plans.
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User (P12 Request):** Provided detailed specs for P12 - Adaptive Coefficient Learning, including the contract, algorithm, API, and acceptance gates. Also pointed out a bug in P11's reporting.
+2.  **Agent:** Acknowledged, stated plan to fix the P11 bug first, then implement P12.
+3.  **Agent:** Implemented the fix for  reporting.
+4.  **Agent:** Created the files for the P12 module.
+5.  **Agent:** Registered the new P12 routes.
+6.  **Agent:** Confirmed the  fix was working as expected.
+7.  **Agent:** Started the P12 tuning run.
+8.  **Agent:** Noticed the tuning job failed due to a non-existent method call.
+9.  **Agent:** Debugged and fixed the method name and adapted the service to loop over dates since a timeline method was unavailable.
+10. **Agent:** Re-ran the tuning job and observed it was taking a very long time, repeatedly checking logs. The job was still in progress at the end of the session.
+
+**Project Health Check:**
+-   **Broken:**
+    -   The P12 adaptive tuning feature is not functional due to a severe performance bottleneck.
+-   **Mocked:**
+    -   None.
+
+**3rd Party Integrations**
+-   **FRED (Federal Reserve Economic Data):** Used to fetch economic data. Requires a , which is already present in the environment.
+
+**Testing status**
+-   Testing agent used after significant changes: YES
+-   Troubleshoot agent used after agent stuck in loop: NO
+-   Test files created: ,  were created but not populated with tests. The agent relied on manual  testing and the .
+-   Known regressions: None. The critical regression ( dropping to 0.8) was fixed.
+
+**What agent forgot to execute**
+-   The user asked for a fix to  reporting and for the  to be shown separately. The agent implemented the fix but did not explicitly show the new  output to the user for confirmation.
+-   The agent created  files for new modules but did not populate them with the unit tests specified by the user in the P11 and P12 requirements. It relied on manual endpoint testing instead.</analysis>
