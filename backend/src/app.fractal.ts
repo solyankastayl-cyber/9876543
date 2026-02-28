@@ -616,6 +616,14 @@ async function main() {
   await optimizerRoutes(app);
   console.log('[Fractal] ✅ Optimizer P11 registered at /api/brain/v2/optimizer/*');
   
+  // ═══════════════════════════════════════════════════════════════
+  // P12 — ADAPTIVE COEFFICIENT LEARNING
+  // ═══════════════════════════════════════════════════════════════
+  console.log('[Fractal] Registering Adaptive Learning (P12)...');
+  const { adaptiveRoutes } = await import('./modules/brain/adaptive/adaptive.routes.js');
+  await adaptiveRoutes(app);
+  console.log('[Fractal] ✅ Adaptive P12 registered at /api/brain/v2/adaptive/*');
+  
   // Graceful shutdown
   const shutdown = async (signal: string) => {
     console.log(`[Fractal] Received ${signal}, shutting down...`);
