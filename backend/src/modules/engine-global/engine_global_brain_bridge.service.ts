@@ -247,6 +247,26 @@ export async function getEngineGlobalWithBrain(params: {
     }
   }
   
+  // ─────────────────────────────────────────────────────────────
+  // Calculate split override intensity (P12 fix)
+  // ─────────────────────────────────────────────────────────────
+  
+  const brainIntensity = bridgeResult.metaRisk.intensityAfter;
+  const optimizerIntensity = optimizerResult 
+    ? Math.max(Math.abs(optimizerResult.deltas.spx), Math.abs(optimizerResult.deltas.btc))
+    : 0;
+  const totalIntensity = brainIntensity + optimizerIntensity;
+  const scenario = brainDecision?.scenario?.name || 'BASE';
+  const intensityCap = scenario === 'TAIL' ? 0.60 : 0.35;
+  
+  const overrideIntensity: OverrideIntensitySection = {
+    brain: Math.round(brainIntensity * 1000) / 1000,
+    optimizer: Math.round(optimizerIntensity * 1000) / 1000,
+    total: Math.round(totalIntensity * 1000) / 1000,
+    cap: intensityCap,
+    withinCap: totalIntensity <= intensityCap,
+  };
+  
   // Update evidence with brain info
   const enhancedEvidence = {
     ...engineOut.evidence,
@@ -262,6 +282,7 @@ export async function getEngineGlobalWithBrain(params: {
       mode: 'on',
       decision: brainDecision,
       metaRisk: bridgeResult.metaRisk,
+      overrideIntensity,
       bridgeSteps: bridgeResult.steps,
       warnings: bridgeResult.warnings,
       optimizer: optimizerResult,
