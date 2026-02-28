@@ -12,7 +12,7 @@ import time
 import hashlib
 
 class RegimeMemoryTester:
-    def __init__(self, base_url="https://fractal-index-1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://adaptive-learn-55.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0

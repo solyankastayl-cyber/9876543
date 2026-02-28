@@ -12,7 +12,7 @@ import time
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://forecast-brain.preview.emergentagent.com"
+    BASE_URL = "https://adaptive-learn-55.preview.emergentagent.com"
 
 TIMEOUT = 60  # Compare can take 5-10 seconds
 SIM_TIMEOUT = 120  # Simulation can take longer
