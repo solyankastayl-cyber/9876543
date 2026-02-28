@@ -296,3 +296,69 @@ if (intensityBefore > maxOverrideCap):
 - `brain_compare.service.ts` - Normalized allocations
 
 ### Next: P11 — Capital Allocation Optimizer
+
+## P11 — Capital Allocation Optimizer (IMPLEMENTED 2026-02-27)
+
+### Philosophy
+- **NOT a replacement for Brain** — small deltas wrapper
+- Max delta = 0.15 (base), 0.08 (defensive), 0.10 (TAIL risk-down only)
+- Always explainable, safety-first
+
+### Formula
+```
+score = expectedTilt - tailPenalty - corrPenalty - guardPenalty
+delta = clamp(score * K, -maxDelta, +maxDelta)
+
+Where:
+- expectedTilt = mean * W_RETURN (1.0)
+- tailPenalty = abs(q05) * W_TAIL (1.2)
+- corrPenalty = contagionScore * W_CORR (0.8)
+- guardPenalty = DEFENSIVE ? W_GUARD (0.6) : 0
+```
+
+### Safety Constraints
+| Constraint | Rule |
+|------------|------|
+| TAIL | deltas ≤ 0 (only risk reduction) |
+| RISK_OFF_SYNC | btcDelta ≤ spxDelta |
+| DEFENSIVE | maxDelta = 0.08 |
+| MIN_CASH | 0.05 |
+
+### Acceptance Gate Results
+| Metric | Value |
+|--------|-------|
+| maxDeltaAllowed | 0.08 |
+| maxDeltaAbs | 0.08 |
+| overrideIntensity (before/after) | 0 / 0 |
+| resilienceScore | 1.0 |
+
+### Allocations Comparison
+| Mode | SPX | BTC | Cash |
+|------|-----|-----|------|
+| brain=1 | 0.318 | 0.328 | 0.354 |
+| brain=1&optimizer=1 | 0.238 | 0.248 | 0.514 |
+
+**Optimizer reduced risk by 0.16 in favor of cash**
+
+### API Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| /api/brain/v2/optimizer/preview | GET | Preview deltas |
+| /api/brain/v2/optimizer/schema | GET | Schema docs |
+| /api/brain/v2/optimizer/simulate | POST | Test with custom inputs |
+| /api/engine/global?brain=1&optimizer=1 | GET | Full pipeline |
+
+### Test Gates (ALL PASSED)
+- ✅ Determinism
+- ✅ Sum = 1.0
+- ✅ No NaN
+- ✅ Delta within cap
+- ✅ TAIL → deltas ≤ 0
+- ✅ RISK_OFF_SYNC → btcDelta ≤ spxDelta
+- ✅ DEFENSIVE → maxDelta = 0.08
+- ✅ cashDelta = -(spxDelta + btcDelta)
+
+### Crash-Test
+**Resilience Score: 1.0 | Grade: PRODUCTION**
+
+### Next: P12 — Adaptive Coefficient Learning
